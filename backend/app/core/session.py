@@ -225,3 +225,80 @@ class LessonSession:
         else:
             self._wrong()
         return self.state()
+
+    # ---------- 实战对弈 ----------
+    def _pick_bot(self) -> Optional[chess.Move]:
+        if self.bot_style == 'master':
+            if self.stockfish is not None:
+                m = self.stockfish.pick(self.board)
+                if m is not None:
+                    return m
+            return pick_bot_move(self.board, 'smart', self.rng)  # 无 stockfish 时兜底
+        return pick_bot_move(self.board, self.bot_style or 'random', self.rng)
+
+    def _play_move(self, uci: str) -> dict:
+        step = self.step
+        if self.play_status != 'playing':
+            raise IllegalMove('本局已结束,请点击"再来一盘"')
+        self.reply = None
+        self._display_fen = None
+        move = parse_move(self.board, uci)
+        self.board.push(move)
+        self.my_moves += 1
+        self.last_move = [move.uci()[:2], move.uci()[2:4]]
+
+        if self.board.is_checkmate():
+            self.play_status = 'won'
+            self.solved = True
+            self.success_text = f'{step.successText}(用了 {self.my_moves} 步)'
+            self.last_result = 'correct'
+            return self.state()
+        if step.win == 'mateOrQueen' and black_queen_gone(self.board):
+            self.play_status = 'won'
+            self.solved = True
+            self.success_text = f'{step.successText}(用了 {self.my_moves} 步)'
+            self.last_result = 'correct'
+            return self.state()
+        if is_draw(self.board):
+            self.play_status = 'draw'
+            self.end_text = step.drawText
+            return self.state()
+
+        # 电脑应对(同步返回,前端延迟动画展示)
+        user_fen = self.board.fen()
+        bm = self._pick_bot()
+        if bm is not None:
+            self.board.push(bm)
+            self._display_fen = user_fen
+            self.reply = {'move': [bm.uci()[:2], bm.uci()[2:4]], 'fen': self.board.fen()}
+            if self.board.is_checkmate():
+                self.play_status = 'lost'
+                self.end_text = step.failText
+            elif is_draw(self.board):
+                self.play_status = 'draw'
+                self.end_text = step.drawText
+        return self.state()
+
+    def restart_play(self, bot_style: Optional[str] = None) -> dict:
+        step = self.step
+        if step.type != 'play':
+            raise IllegalMove('当前不是对弈步骤')
+        if bot_style is not None:
+            if bot_style not in BOT_STYLES:
+                raise IllegalMove(f'未知对手档位:{bot_style}')
+            self.bot_style = bot_style
+        # 尚未走子的换档/重开不算失误;对局中途重开算一次小失误(影响星级)
+        fresh = self.play_status == 'playing' and self.my_moves == 0
+        if not fresh:
+            self.mistakes += 1
+        self.board = chess.Board(step.fen)
+        self.last_move = None
+        self.reply = None
+        self._display_fen = None
+        self.play_status = 'playing'
+        self.my_moves = 0
+        self.solved = False
+        self.success_text = None
+        self.end_text = None
+        self.last_result = None
+        return self.state()
