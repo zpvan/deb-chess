@@ -1,73 +1,46 @@
-# React + TypeScript + Vite
+# 菲舍尔国际象棋练级营 (deb-chess)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+面向儿童的国际象棋教学应用,课程方法源自《鲍比·菲舍尔教你下国际象棋》:
+看局面、自己想、对答案,反复识别杀王模式形成直觉。
 
-Currently, two official plugins are available:
+## 架构
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **后端(Python)**:FastAPI + python-chess。负责课程数据、走法校验、将杀判定、
+  bot(random/greedy/smart 手写三档 + Stockfish 大师档)、进度存储(SQLite)。
+- **前端(React/Vite)**:纯展示层,所有棋局逻辑通过 `/api` 调用后端。
 
-## React Compiler
+## 本地运行
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+./start.sh        # 一键:构建前端 + 起后端,打开 http://localhost:8000
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+开发模式(前后端分离热更新):
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```bash
+# 终端 1:后端
+python3 -m venv .venv && .venv/bin/pip install -e 'backend[dev]'
+cd backend && ../.venv/bin/uvicorn app.main:app --reload --port 8000
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# 终端 2:前端(/api 已代理到 :8000)
+npm install && npm run dev   # http://localhost:3000
 ```
+
+## Docker
+
+```bash
+docker compose up --build    # http://localhost:8000(镜像内含 stockfish)
+```
+
+## 测试
+
+```bash
+cd backend && ../.venv/bin/pytest tests/ -v
+```
+
+## 课程数据
+
+- 数据源:`backend/data/curriculum.json`(由 `backend/scripts/convert_curriculum.sh`
+  从旧版 `src/data/curriculum.ts` 一次性转换生成,原文件已删除)。
+- 修改课程后直接编辑 JSON,然后跑校验:
+  `python3 backend/scripts/validate_curriculum.py`(校验所有 FEN 与答案走法)。

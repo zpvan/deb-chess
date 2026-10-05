@@ -1,0 +1,10 @@
+services:
+  deb-chess:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - progress-data:/app/db   # 进度数据库持久化
+
+volumes:
+  progress-data:

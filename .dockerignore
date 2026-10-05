@@ -1,0 +1,9 @@
+node_modules
+dist
+.venv
+.git
+docs
+data
+**/__pycache__
+**/*.pyc
+backend/data/progress.db
