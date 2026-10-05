@@ -1,73 +1,48 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { totalLevels } from '@/data/curriculum'
-
-const STORAGE_KEY = 'fischer-chess-progress-v1'
-
-export interface ProgressData {
-  levels: Record<string, { stars: number }>
-  xp: number
-}
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { api } from '@/lib/api'
 
 interface ProgressCtx {
-  data: ProgressData
   xp: number
-  completeLevel: (levelId: string, stars: number) => void
-  isUnlocked: (levelId: string) => boolean
-  starsOf: (levelId: string) => number
   totalStars: number
   rank: { name: string; icon: string }
+  starsOf: (levelId: string) => number
+  refresh: () => Promise<void>
+  // 兼容 shim:旧 Lesson.tsx 仍调用 completeLevel,Task 13 重写后于 Task 14 删除
+  completeLevel: (levelId: string, stars: number) => void
 }
-
-const empty: ProgressData = { levels: {}, xp: 0 }
 
 const Ctx = createContext<ProgressCtx | null>(null)
 
-const RANKS: { min: number; name: string; icon: string }[] = [
-  { min: 0, name: '小士兵', icon: '♟' },
-  { min: 100, name: '小骑士', icon: '♞' },
-  { min: 250, name: '小主教', icon: '♝' },
-  { min: 450, name: '小城堡', icon: '♜' },
-  { min: 700, name: '小皇后', icon: '♛' },
-  { min: 1000, name: '小棋王', icon: '♚' },
-]
-
-function load(): ProgressData {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) return { ...empty, ...JSON.parse(raw) }
-  } catch {
-    /* ignore */
-  }
-  return empty
-}
-
 export function ProgressProvider({ children }: { children: ReactNode }) {
-  const [data, setData] = useState<ProgressData>(load)
+  const [levels, setLevels] = useState<Record<string, number>>({})
+  const [xp, setXp] = useState(0)
+  const [totalStars, setTotalStars] = useState(0)
+  const [rank, setRank] = useState({ name: '小士兵', icon: '♟' })
+
+  const refresh = useCallback(async () => {
+    const p = await api.getProgress()
+    setLevels(p.levels)
+    setXp(p.xp)
+    setTotalStars(p.total_stars)
+    setRank({ name: p.rank_name, icon: p.rank_icon })
+  }, [])
 
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
-    } catch {
-      /* ignore */
-    }
-  }, [data])
+    refresh().catch(() => undefined)
+  }, [refresh])
 
-  const value = useMemo<ProgressCtx>(() => {
-    const starsOf = (levelId: string) => data.levels[levelId]?.stars ?? 0
-    // 全部关卡不上锁：孩子可以自由选择任何一关，按自己的节奏学习
-    const isUnlocked = (_levelId: string) => true
-    const completeLevel = (levelId: string, stars: number) => {
-      setData((d) => {
-        const prev = d.levels[levelId]?.stars ?? 0
-        const best = Math.max(prev, stars)
-        const gained = prev === 0 ? 60 + stars * 20 : Math.max(0, (best - prev) * 20)
-        return { levels: { ...d.levels, [levelId]: { stars: best } }, xp: d.xp + gained }
-      })
-    }
-    const totalStars = Object.values(data.levels).reduce((n, l) => n + l.stars, 0)
-    const rank = [...RANKS].reverse().find((r) => data.xp >= r.min) ?? RANKS[0]
-    return { data, xp: data.xp, completeLevel, isUnlocked, starsOf, totalStars, rank }
-  }, [data])
+  const value = useMemo<ProgressCtx>(
+    () => ({
+      xp,
+      totalStars,
+      rank,
+      refresh,
+      starsOf: (id) => levels[id] ?? 0,
+      // 兼容 shim:进度由后端在通关时自动记录,这里只需刷新;Task 14 删除
+      completeLevel: () => void refresh().catch(() => undefined),
+    }),
+    [xp, totalStars, rank, levels, refresh],
+  )
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }
@@ -77,5 +52,3 @@ export function useProgress(): ProgressCtx {
   if (!ctx) throw new Error('useProgress must be used within ProgressProvider')
   return ctx
 }
-
-export { totalLevels }
