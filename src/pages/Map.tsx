@@ -1,5 +1,5 @@
-import { chapters, flatLevels } from '@/data/curriculum'
 import { useProgress } from '@/state/progress'
+import { useCurriculum } from '@/state/curriculum'
 import { Star, Play, ChevronLeft } from 'lucide-react'
 
 interface Props {
@@ -9,6 +9,7 @@ interface Props {
 
 export default function MapPage({ onOpen, onHome }: Props) {
   const { starsOf, totalStars, xp, rank } = useProgress()
+  const { chapters, flatLevels } = useCurriculum()
 
   return (
     <div className="min-h-screen bg-[#fff8ea] pb-24">

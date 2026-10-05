@@ -1,6 +1,6 @@
 import ChessBoard from '@/components/ChessBoard'
 import { useProgress } from '@/state/progress'
-import { flatLevels, totalPuzzles } from '@/data/curriculum'
+import { useCurriculum } from '@/state/curriculum'
 import { Star, Play, BookOpen, Crown, Swords, Flag, Gamepad2 } from 'lucide-react'
 
 interface Props {
@@ -9,6 +9,7 @@ interface Props {
 
 export default function Home({ onStart }: Props) {
   const { xp, totalStars, rank, starsOf } = useProgress()
+  const { flatLevels, totalPuzzles } = useCurriculum()
   const nextLevel = flatLevels.find((f) => starsOf(f.level.id) === 0)
 
   return (
@@ -130,7 +131,7 @@ export default function Home({ onStart }: Props) {
       </section>
 
       <footer className="max-w-5xl mx-auto px-4 py-8 text-center text-sm text-[#a3927c]">
-        <p>学习进度保存在这台设备的浏览器里，换设备或清除浏览器数据会重新开始哦。</p>
+        <p>学习进度保存在本机服务器的数据库里，换浏览器也不丢哦。</p>
       </footer>
     </div>
   )

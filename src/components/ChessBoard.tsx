@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Chess, type Square } from 'chess.js'
+import { parseFen } from '@/lib/fen'
 
 const GLYPH: Record<string, string> = {
   wk: '♔', wq: '♕', wr: '♖', wb: '♗', wn: '♘', wp: '♙',
@@ -17,7 +17,8 @@ interface Props {
   arrows?: [string, string][]
   lastMove?: [string, string] | null
   shake?: boolean
-  size?: number
+  legalMoves?: string[]        // 当前行棋方的合法走法(UCI),来自后端
+  checkSquare?: string | null  // 被将军一方的王所在格,来自后端
 }
 
 function sqToXY(sq: string): { x: number; y: number } {
@@ -35,47 +36,31 @@ export default function ChessBoard({
   arrows = [],
   lastMove = null,
   shake = false,
+  legalMoves = [],
+  checkSquare = null,
 }: Props) {
-  const chess = useMemo(() => new Chess(fen), [fen])
+  const { board, turn } = useMemo(() => parseFen(fen), [fen])
   const [selected, setSelected] = useState<string | null>(null)
 
   useEffect(() => {
     setSelected(null)
   }, [fen])
 
-  const board = chess.board() // [rank0=8 ... rank7=1][file a..h]
-  const turn = chess.turn()
-
   const targets = useMemo(() => {
     if (!selected) return new Set<string>()
     return new Set(
-      chess.moves({ square: selected as Square, verbose: true }).map((m) => m.to),
+      legalMoves.filter((m) => m.startsWith(selected)).map((m) => m.slice(2, 4)),
     )
-  }, [chess, selected])
-
-  // 被将军一方的王所在格
-  const checkSquare = useMemo(() => {
-    if (!chess.inCheck()) return null
-    const kingGlyph = turn === 'w' ? 'k' : 'K'
-    for (let r = 0; r < 8; r++)
-      for (let f = 0; f < 8; f++) {
-        const p = board[r][f]
-        if (p && p.type === 'k' && p.color === turn) {
-          void kingGlyph
-          return p.square
-        }
-      }
-    return null
-  }, [chess, board, turn])
+  }, [legalMoves, selected])
 
   const ranks = orientation === 'white' ? [0, 1, 2, 3, 4, 5, 6, 7] : [7, 6, 5, 4, 3, 2, 1, 0]
   const files = orientation === 'white' ? [0, 1, 2, 3, 4, 5, 6, 7] : [7, 6, 5, 4, 3, 2, 1, 0]
 
   const handleTap = (sq: string) => {
     if (!interactive) return
-    const piece = chess.get(sq as Square)
+    const piece = board[8 - parseInt(sq[1])][FILES.indexOf(sq[0])]
     if (selected && targets.has(sq)) {
-      onMove?.(selected + sq + 'q') // 升变默认皇后；chess.js 会忽略多余的 promotion
+      onMove?.(selected + sq + 'q') // 升变默认皇后;后端会忽略多余的 promotion
       setSelected(null)
       return
     }
@@ -173,7 +158,6 @@ export default function ChessBoard({
           {arrows.map(([from, to], i) => {
             const a = sqToXY(from)
             const b = sqToXY(to)
-            // 缩短箭头，避免压到棋子中心
             const dx = b.x - a.x
             const dy = b.y - a.y
             const len = Math.hypot(dx, dy) || 1
