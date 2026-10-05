@@ -251,7 +251,7 @@ console.log('chapters:', chapters.length, 'levels:', levels, 'steps:', steps);
 - [ ] **Step 2: 运行转换**
 
 Run: `npm install`(若 node_modules 不存在)然后 `bash backend/scripts/convert_curriculum.sh`
-Expected: 输出 `chapters: 4 levels: <N> steps: <M>`(N、M 为正数;记录实际数字)。确认 `backend/data/curriculum.json` 已生成且开头为 `[ { "id": "warmup", ...`。
+Expected: 输出 `chapters: 5 levels: 20 steps: 82`。确认 `backend/data/curriculum.json` 已生成且开头为 `[ { "id": "warmup", ...`。
 
 - [ ] **Step 3: 抽查数据完整性**
 
@@ -723,10 +723,11 @@ def score_moves(board: chess.Board, style: str, rng: random.Random) -> list[tupl
         if style == 'smart':
             # 走完若会被对方白白吃掉,扣分(对方攻击者多于我方保护者且棋子比兵贵)
             enemy = board.turn
+            piece = board.piece_type_at(m.to_square)  # push 之后,棋子在落点格
             attackers = len(board.attackers(enemy, m.to_square))
             defenders = len(board.attackers(not enemy, m.to_square))
-            if attackers > defenders and VAL[m.piece_type] > 1:
-                s -= VAL[m.piece_type] * 15
+            if attackers > defenders and VAL[piece] > 1:
+                s -= VAL[piece] * 15
         board.pop()
         scored.append((s, m))
     scored.sort(key=lambda t: t[0], reverse=True)
@@ -1640,7 +1641,7 @@ TINY_CURRICULUM = [{
              'prompt': 'p', 'accepted': ['a1a5'], 'successText': 'ok'},
         ],
     }],
-]
+}]
 
 
 @pytest.fixture
@@ -1919,8 +1920,11 @@ git commit -m "feat: full REST API with session store and static hosting"
 const BASE = '/api'
 
 export class ApiError extends Error {
-  constructor(message: string, public status: number) {
+  status: number
+
+  constructor(message: string, status: number) {
     super(message)
+    this.status = status
   }
 }
 
@@ -3272,7 +3276,7 @@ raw = sys.stdin.read()
 d = json.loads(raw)
 assert 'accepted' not in raw and 'script' not in raw, '答案字段泄露!'
 print('chapters:', len(d['chapters']), 'levels:', d['total_levels'], 'stockfish:', d['stockfish_available'])"
-# → chapters: 4 levels: <N> stockfish: true/false
+# → chapters: 5 levels: 20 stockfish: true/false
 
 SID=$(curl -s -X POST localhost:8000/api/sessions -H 'Content-Type: application/json' \
   -d '{"level_id":"w1"}' | python3 -c 'import sys,json;print(json.load(sys.stdin)["session_id"])')

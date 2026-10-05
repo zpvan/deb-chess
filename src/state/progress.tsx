@@ -7,8 +7,6 @@ interface ProgressCtx {
   rank: { name: string; icon: string }
   starsOf: (levelId: string) => number
   refresh: () => Promise<void>
-  // 兼容 shim:旧 Lesson.tsx 仍调用 completeLevel,Task 13 重写后于 Task 14 删除
-  completeLevel: (levelId: string, stars: number) => void
 }
 
 const Ctx = createContext<ProgressCtx | null>(null)
@@ -38,8 +36,6 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
       rank,
       refresh,
       starsOf: (id) => levels[id] ?? 0,
-      // 兼容 shim:进度由后端在通关时自动记录,这里只需刷新;Task 14 删除
-      completeLevel: () => void refresh().catch(() => undefined),
     }),
     [xp, totalStars, rank, levels, refresh],
   )
