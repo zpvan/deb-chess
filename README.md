@@ -9,24 +9,6 @@ A chess-learning web app for kids, inspired by the teaching method of
 check the answer — drill mate patterns until they become intuition.
 (UI text is in Chinese.)
 
-![Home](docs/screenshots/home.png)
-
-## Features
-
-- **20 levels in 5 chapters** — endgames first, then middlegame tactics,
-  openings, and real games against the computer
-- **6 interactive step types**: teach, mate-in-1, find-the-move, mating
-  lines, quizzes, play-vs-bot
-- **4 bot difficulties**: 3 handcrafted styles (random / greedy / smart)
-  plus a Stockfish "Master" tier (UCI, optional)
-- **Stars / XP / ranks** progress system persisted in SQLite
-- **Backend-authoritative**: every move is validated server-side with
-  python-chess; puzzle answers never reach the browser
-
-| Map | Lesson |
-| --- | --- |
-| ![Map](docs/screenshots/map.png) | ![Lesson](docs/screenshots/lesson.png) |
-
 ## Architecture
 
 - **Backend (Python)** — FastAPI + python-chess: curriculum data, move
