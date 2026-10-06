@@ -1,12 +1,8 @@
-from pathlib import Path
-
 from app.models import load_curriculum, public_step
-
-DATA = Path(__file__).resolve().parents[1] / 'data' / 'curriculum.json'
 
 
 def test_load_real_curriculum():
-    cur = load_curriculum(DATA)
+    cur = load_curriculum()  # 默认加载 backend/data/curriculum.py
     flats = cur.flat_levels()
     assert len(flats) > 0
     ids = [lv.id for _, lv, _ in flats]
@@ -17,7 +13,7 @@ def test_load_real_curriculum():
 
 
 def test_public_step_strips_answers():
-    cur = load_curriculum(DATA)
+    cur = load_curriculum()
     _, level, _ = cur.find_level('w1')
     move_step = next(s for s in level.steps if s.type == 'move')
     pub = public_step(move_step)

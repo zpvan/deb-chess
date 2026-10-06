@@ -1,8 +1,12 @@
+import importlib.util
 import json
 from pathlib import Path
 from typing import Annotated, Literal, Optional, Union
 
 from pydantic import BaseModel, Field
+
+# 课程数据为 Python 模块(backend/data/curriculum.py,暴露 CHAPTERS: list[dict])
+DEFAULT_DATA = Path(__file__).resolve().parents[1] / 'data' / 'curriculum.py'
 
 
 class TeachStep(BaseModel):
@@ -123,6 +127,16 @@ def public_step(step: Step) -> dict:
     }
 
 
-def load_curriculum(path: Union[str, Path]) -> Curriculum:
-    data = json.loads(Path(path).read_text(encoding='utf-8'))
-    return Curriculum.model_validate({'chapters': data})
+def load_chapters(path: Union[str, Path, None] = None) -> list[dict]:
+    """加载课程数据。默认读 Python 模块;测试可传 JSON 文件路径。"""
+    path = Path(path) if path else DEFAULT_DATA
+    if path.suffix == '.py':
+        spec = importlib.util.spec_from_file_location('curriculum_data', path)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        return mod.CHAPTERS
+    return json.loads(path.read_text(encoding='utf-8'))
+
+
+def load_curriculum(path: Union[str, Path, None] = None) -> Curriculum:
+    return Curriculum.model_validate({'chapters': load_chapters(path)})

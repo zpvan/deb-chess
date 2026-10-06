@@ -17,7 +17,7 @@ WORKDIR /app
 COPY backend/pyproject.toml ./
 COPY backend/app ./app
 RUN pip install --no-cache-dir .
-COPY backend/data/curriculum.json ./data/curriculum.json
+COPY backend/data/curriculum.py ./data/curriculum.py
 COPY --from=frontend /app/dist ./dist
 ENV DIST_DIR=/app/dist DB_PATH=/app/db/progress.db
 EXPOSE 8000

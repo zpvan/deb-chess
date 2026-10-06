@@ -21,7 +21,7 @@ Both must pass. CI runs the same checks on every PR.
 
 ## Curriculum changes
 
-- Edit `backend/data/curriculum.json` only (there is no other source).
+- Edit `backend/data/curriculum.py` only (there is no other source).
 - Every change must pass `python3 backend/scripts/validate_curriculum.py`
   — it checks every FEN and every answer move with python-chess.
 - Never reintroduce book page scans or other copyrighted material

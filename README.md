@@ -52,7 +52,7 @@ answer move in the curriculum data.
 
 ## Curriculum Data
 
-- Source of truth: `backend/data/curriculum.json`
+- Source of truth: `backend/data/curriculum.py`
   (5 chapters, 20 levels, 82 steps; lesson text in Chinese).
 - After editing, run the validator — every FEN must be legal and every
   answer move must be playable:

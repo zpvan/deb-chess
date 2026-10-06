@@ -1,16 +1,23 @@
-"""用 python-chess 校验 curriculum.json 中的所有棋题。
+"""用 python-chess 校验 curriculum.py 中的所有棋题。
 
 用法:
-  python scripts/validate_curriculum.py   # 校验 backend/data/curriculum.json
+  python scripts/validate_curriculum.py   # 校验 backend/data/curriculum.py
 也被 tests/test_validate_curriculum.py 作为用例调用。
 """
-import json
+import importlib.util
 import sys
 from pathlib import Path
 
 import chess
 
-DATA = Path(__file__).resolve().parents[1] / 'data' / 'curriculum.json'
+DATA = Path(__file__).resolve().parents[1] / 'data' / 'curriculum.py'
+
+
+def load_chapters(path: Path = DATA) -> list[dict]:
+    spec = importlib.util.spec_from_file_location('curriculum_data', path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod.CHAPTERS
 
 
 def _legal(board: chess.Board) -> set[str]:
@@ -81,8 +88,7 @@ def _mates(board: chess.Board, move: chess.Move) -> bool:
 
 
 def main() -> int:
-    chapters = json.loads(DATA.read_text(encoding='utf-8'))
-    errors = validate_all(chapters)
+    errors = validate_all(load_chapters())
     if errors:
         print(f'发现 {len(errors)} 个问题:')
         for e in errors:

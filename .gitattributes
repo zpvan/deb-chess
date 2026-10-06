@@ -1,0 +1,4 @@
+# GitHub Linguist 语言统计配置
+# 文档不计入语言统计
+*.md linguist-documentation
+docs/** linguist-documentation

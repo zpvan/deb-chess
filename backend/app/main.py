@@ -14,7 +14,7 @@ from app.models import load_curriculum, public_step
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 REPO_ROOT = BACKEND_DIR.parent
-DEFAULT_CURRICULUM = BACKEND_DIR / 'data' / 'curriculum.json'
+DEFAULT_CURRICULUM = BACKEND_DIR / 'data' / 'curriculum.py'
 DEFAULT_DB = BACKEND_DIR / 'data' / 'progress.db'
 
 

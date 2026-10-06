@@ -1,16 +1,12 @@
-import json
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
-from validate_curriculum import validate_all
-
-DATA = Path(__file__).resolve().parents[1] / 'data' / 'curriculum.json'
+from validate_curriculum import load_chapters, validate_all
 
 
 def test_real_curriculum_is_valid():
-    chapters = json.loads(DATA.read_text(encoding='utf-8'))
-    errors = validate_all(chapters)
+    errors = validate_all(load_chapters())
     assert errors == [], '\n'.join(errors)
 
 

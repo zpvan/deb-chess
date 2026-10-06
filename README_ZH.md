@@ -47,7 +47,7 @@ cd backend && ../.venv/bin/pytest tests/ -v
 
 ## 课程数据
 
-- 数据源:`backend/data/curriculum.json`(5 章 20 关 82 步)。
+- 数据源:`backend/data/curriculum.py`(5 章 20 关 82 步,Python 模块)。
 - 修改课程后必须运行校验器(每个 FEN 合法、每个答案走法可走):
 
   ```bash
