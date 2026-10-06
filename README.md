@@ -20,13 +20,13 @@ check the answer — drill mate patterns until they become intuition.
 
 ```bash
 ./start.sh        # builds the frontend and starts the server
-                  # → http://localhost:8000
+                  # → http://localhost:8642
 ```
 
 With Docker (image includes Stockfish):
 
 ```bash
-docker compose up --build   # → http://localhost:8000
+docker compose up --build   # → http://localhost:8642
 ```
 
 Development mode (hot reload):
@@ -34,9 +34,9 @@ Development mode (hot reload):
 ```bash
 # terminal 1: backend
 python3 -m venv .venv && .venv/bin/pip install -e 'backend[dev]'
-cd backend && ../.venv/bin/uvicorn app.main:app --reload --port 8000
+cd backend && ../.venv/bin/uvicorn app.main:app --reload --port 8642
 
-# terminal 2: frontend (/api is proxied to :8000)
+# terminal 2: frontend (/api is proxied to :8642)
 npm install && npm run dev   # → http://localhost:3000
 ```
 

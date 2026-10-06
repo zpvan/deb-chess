@@ -187,9 +187,9 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4 py-10" style={{ backgroundColor: st.chapter_soft }}>
         <Confetti />
-        <div className="w-full max-w-md bg-[#fffdf6] rounded-3xl shadow-xl p-8 text-center border-4 border-[#1f1a17]">
-          <div className="text-6xl mb-2">🏆</div>
-          <h2 className="font-display text-3xl mb-1">闯关成功!</h2>
+        <div className="w-full max-w-md bg-[#fffdf6] rounded-3xl shadow-xl p-6 text-center border-4 border-[#1f1a17]">
+          <div className="text-5xl mb-1">🏆</div>
+          <h2 className="font-display text-2xl mb-1">闯关成功!</h2>
           <p className="text-[#6b5d4f] mb-3">{st.chapter_title} · {st.level_title}</p>
           <div className="inline-block px-4 py-1.5 rounded-full text-sm font-bold text-white mb-4" style={{ backgroundColor: accent }}>
             获得技能:{st.level_skill}
@@ -229,13 +229,13 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
     <div className="min-h-screen" style={{ backgroundColor: st.chapter_soft }}>
       {/* 顶栏 */}
       <div className="sticky top-0 z-20 bg-[#fffdf6]/95 backdrop-blur border-b-2 border-[#1f1a17]/10">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
+        <div className="max-w-4xl mx-auto px-4 py-2 flex items-center gap-3">
           <button onClick={onExit} className="p-2 rounded-full hover:bg-[#f3ead9] transition" aria-label="返回">
             <ArrowLeft size={22} />
           </button>
           <div className="flex-1 min-w-0">
             <div className="text-xs font-bold" style={{ color: accent }}>{st.chapter_badge} · {st.chapter_title}</div>
-            <div className="font-display text-lg leading-tight truncate">{st.level_title}</div>
+            <div className="font-display text-base leading-tight truncate">{st.level_title}</div>
           </div>
           <div className="flex items-center gap-1.5">
             {Array.from({ length: st.step_count }).map((_, i) => (
@@ -246,11 +246,11 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto px-4 py-6 pb-24">
-        <div className={`grid gap-6 ${step.type === 'choice' || step.type === 'teach' ? 'md:grid-cols-[1fr_1fr] md:items-center' : ''}`}>
+      <div className="max-w-4xl mx-auto px-4 py-4 pb-6">
+        <div className="grid gap-5 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:items-center">
           {/* 棋盘 */}
           {boardFen && (
-            <div key={`${st.step_index}-${wrongFlash}`} className="w-full max-w-[520px] mx-auto">
+            <div key={`${st.step_index}-${wrongFlash}`} className="w-full max-w-[min(100%,400px)] md:max-w-[min(100%,56vh)] mx-auto">
               <ChessBoard
                 fen={boardFen}
                 interactive={((isPuzzle && !st.solved) || (step.type === 'play' && st.play_status === 'playing')) && !awaitingReply && !busy}
@@ -277,13 +277,13 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
           {/* 文字区 */}
           <div>
             {step.type === 'teach' && (
-              <div className="bg-[#fffdf6] rounded-3xl border-2 border-[#1f1a17]/10 p-6 shadow-sm">
-                <h3 className="font-display text-2xl mb-3" style={{ color: accent }}>{step.title}</h3>
+              <div className="bg-[#fffdf6] rounded-3xl border-2 border-[#1f1a17]/10 p-5 shadow-sm">
+                <h3 className="font-display text-xl mb-2" style={{ color: accent }}>{step.title}</h3>
                 {(step.text ?? []).map((t, i) => (
-                  <p key={i} className="text-[17px] leading-relaxed text-[#3a322c] mb-2">{t}</p>
+                  <p key={i} className="text-[15px] leading-relaxed text-[#3a322c] mb-2">{t}</p>
                 ))}
                 <button onClick={() => void goNext()} disabled={busy}
-                  className="mt-4 px-6 py-3 rounded-full text-white font-bold flex items-center gap-2 hover:opacity-90 transition disabled:opacity-50"
+                  className="mt-4 px-6 py-2.5 rounded-full text-white font-bold flex items-center gap-2 hover:opacity-90 transition disabled:opacity-50"
                   style={{ backgroundColor: accent }}>
                   我明白了 <ArrowRight size={18} />
                 </button>
@@ -291,11 +291,11 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
             )}
 
             {isPuzzle && (
-              <div className="bg-[#fffdf6] rounded-3xl border-2 border-[#1f1a17]/10 p-6 shadow-sm">
+              <div className="bg-[#fffdf6] rounded-3xl border-2 border-[#1f1a17]/10 p-5 shadow-sm">
                 <div className="inline-block px-3 py-1 rounded-full text-xs font-bold text-white mb-3" style={{ backgroundColor: accent }}>
                   {step.type === 'mate' ? '⚡ 一步杀' : step.type === 'line' ? '🔥 连续杀' : '🎯 找到这步棋'}
                 </div>
-                <p className="text-lg font-bold leading-relaxed text-[#3a322c]">
+                <p className="text-base font-bold leading-relaxed text-[#3a322c]">
                   {step.type === 'line' ? st.line_prompt : step.prompt}
                 </p>
 
@@ -322,7 +322,7 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
                       🎉 {st.success_text}
                     </div>
                     <button onClick={() => void goNext()} disabled={busy}
-                      className="mt-4 px-6 py-3 rounded-full text-white font-bold flex items-center gap-2 hover:opacity-90 transition disabled:opacity-50"
+                      className="mt-4 px-6 py-2.5 rounded-full text-white font-bold flex items-center gap-2 hover:opacity-90 transition disabled:opacity-50"
                       style={{ backgroundColor: accent }}>
                       继续 <ArrowRight size={18} />
                     </button>
@@ -335,11 +335,11 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
             )}
 
             {step.type === 'choice' && (
-              <div className="bg-[#fffdf6] rounded-3xl border-2 border-[#1f1a17]/10 p-6 shadow-sm">
+              <div className="bg-[#fffdf6] rounded-3xl border-2 border-[#1f1a17]/10 p-5 shadow-sm">
                 <div className="inline-block px-3 py-1 rounded-full text-xs font-bold text-white mb-3" style={{ backgroundColor: accent }}>
                   🤔 想一想
                 </div>
-                <p className="text-lg font-bold leading-relaxed text-[#3a322c] mb-4">{step.question}</p>
+                <p className="text-base font-bold leading-relaxed text-[#3a322c] mb-4">{step.question}</p>
                 <div className="flex flex-col gap-2.5">
                   {(step.options ?? []).map((opt, i) => {
                     const isRight = pickedChoice === i
@@ -365,7 +365,7 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
                       ✅ {st.success_text}
                     </div>
                     <button onClick={() => void goNext()} disabled={busy}
-                      className="mt-4 px-6 py-3 rounded-full text-white font-bold flex items-center gap-2 hover:opacity-90 transition disabled:opacity-50"
+                      className="mt-4 px-6 py-2.5 rounded-full text-white font-bold flex items-center gap-2 hover:opacity-90 transition disabled:opacity-50"
                       style={{ backgroundColor: accent }}>
                       继续 <ArrowRight size={18} />
                     </button>
@@ -375,11 +375,11 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
             )}
 
             {step.type === 'play' && (
-              <div className="bg-[#fffdf6] rounded-3xl border-2 border-[#1f1a17]/10 p-6 shadow-sm">
+              <div className="bg-[#fffdf6] rounded-3xl border-2 border-[#1f1a17]/10 p-5 shadow-sm">
                 <div className="inline-block px-3 py-1 rounded-full text-xs font-bold text-white mb-3" style={{ backgroundColor: accent }}>
                   <Swords size={12} className="inline -mt-0.5 mr-1" /> 实战对弈
                 </div>
-                <p className="text-lg font-bold leading-relaxed text-[#3a322c]">{step.prompt}</p>
+                <p className="text-base font-bold leading-relaxed text-[#3a322c]">{step.prompt}</p>
 
                 {/* 开局前可选对手档位 */}
                 {st.play_status === 'playing' && st.my_moves === 0 && (
@@ -429,7 +429,7 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
                       🏆 {st.success_text}
                     </div>
                     <button onClick={() => void goNext()} disabled={busy}
-                      className="mt-4 px-6 py-3 rounded-full text-white font-bold flex items-center gap-2 hover:opacity-90 transition disabled:opacity-50"
+                      className="mt-4 px-6 py-2.5 rounded-full text-white font-bold flex items-center gap-2 hover:opacity-90 transition disabled:opacity-50"
                       style={{ backgroundColor: accent }}>
                       继续 <ArrowRight size={18} />
                     </button>
@@ -441,7 +441,7 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
                       {st.end_text}
                     </div>
                     <button onClick={() => void restart()} disabled={busy}
-                      className="mt-4 px-6 py-3 rounded-full text-white font-bold flex items-center gap-2 hover:opacity-90 transition disabled:opacity-50"
+                      className="mt-4 px-6 py-2.5 rounded-full text-white font-bold flex items-center gap-2 hover:opacity-90 transition disabled:opacity-50"
                       style={{ backgroundColor: accent }}>
                       <RotateCcw size={18} /> 再来一盘
                     </button>

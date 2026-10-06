@@ -18,7 +18,7 @@ export default function Home({ onStart }: Props) {
       <header className="sticky top-0 z-20 bg-[#fffdf6]/95 backdrop-blur border-b-2 border-[#1f1a17]/10">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3">
           <span className="text-3xl" style={{ fontFamily: '"Segoe UI Symbol","Noto Sans Symbols 2",sans-serif' }}>♞</span>
-          <span className="font-display text-xl flex-1">菲舍尔国际象棋练级营</span>
+          <span className="font-display text-xl flex-1">deb-chess 练级营</span>
           <div className="flex items-center gap-1 text-sm font-bold bg-[#fdf3d7] px-3 py-1.5 rounded-full">
             <Star size={15} className="fill-[#f7c948] text-[#b8860b]" /> {totalStars}
           </div>

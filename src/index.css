@@ -86,7 +86,8 @@
 }
 
 .font-display {
-  font-family: "ZCOOL KuaiLe", -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-family: -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  font-weight: 700;
   letter-spacing: 0.01em;
 }
 

@@ -16,13 +16,13 @@
 ## 快速开始
 
 ```bash
-./start.sh        # 构建前端并启动服务 → http://localhost:8000
+./start.sh        # 构建前端并启动服务 → http://localhost:8642
 ```
 
 Docker(镜像内含 Stockfish):
 
 ```bash
-docker compose up --build   # → http://localhost:8000
+docker compose up --build   # → http://localhost:8642
 ```
 
 开发模式(前后端热更新):
@@ -30,9 +30,9 @@ docker compose up --build   # → http://localhost:8000
 ```bash
 # 终端 1:后端
 python3 -m venv .venv && .venv/bin/pip install -e 'backend[dev]'
-cd backend && ../.venv/bin/uvicorn app.main:app --reload --port 8000
+cd backend && ../.venv/bin/uvicorn app.main:app --reload --port 8642
 
-# 终端 2:前端(/api 已代理到 :8000)
+# 终端 2:前端(/api 已代理到 :8642)
 npm install && npm run dev   # → http://localhost:3000
 ```
 
