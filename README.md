@@ -29,15 +29,11 @@ With Docker (image includes Stockfish):
 docker compose up --build   # → http://localhost:8642
 ```
 
-Development mode (hot reload):
+Development mode (hot reload for both ends, one command):
 
 ```bash
-# terminal 1: backend
-python3 -m venv .venv && .venv/bin/pip install -e 'backend[dev]'
-cd backend && ../.venv/bin/uvicorn app.main:app --reload --port 8642
-
-# terminal 2: frontend (/api is proxied to :8642)
-npm install && npm run dev   # → http://localhost:3000
+./start.sh --dev   # backend auto-reload (uvicorn --reload)
+                   # + frontend HMR (vite) → http://localhost:3000
 ```
 
 ## Testing
