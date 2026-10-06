@@ -1,46 +1,96 @@
-# 菲舍尔国际象棋练级营 (deb-chess)
+# deb-chess — Fischer Chess Training Camp
 
-面向儿童的国际象棋教学应用,课程方法源自《鲍比·菲舍尔教你下国际象棋》:
-看局面、自己想、对答案,反复识别杀王模式形成直觉。
+[中文版](README_ZH.md)
 
-## 架构
+[![CI](https://github.com/zpvan/deb-chess/actions/workflows/ci.yml/badge.svg)](https://github.com/zpvan/deb-chess/actions/workflows/ci.yml)
 
-- **后端(Python)**:FastAPI + python-chess。负责课程数据、走法校验、将杀判定、
-  bot(random/greedy/smart 手写三档 + Stockfish 大师档)、进度存储(SQLite)。
-- **前端(React/Vite)**:纯展示层,所有棋局逻辑通过 `/api` 调用后端。
+A chess-learning web app for kids, inspired by the teaching method of
+*Bobby Fischer Teaches Chess*: look at the position, think for yourself,
+check the answer — drill mate patterns until they become intuition.
+(UI text is in Chinese.)
 
-## 本地运行
+![Home](docs/screenshots/home.png)
+
+## Features
+
+- **20 levels in 5 chapters** — endgames first, then middlegame tactics,
+  openings, and real games against the computer
+- **6 interactive step types**: teach, mate-in-1, find-the-move, mating
+  lines, quizzes, play-vs-bot
+- **4 bot difficulties**: 3 handcrafted styles (random / greedy / smart)
+  plus a Stockfish "Master" tier (UCI, optional)
+- **Stars / XP / ranks** progress system persisted in SQLite
+- **Backend-authoritative**: every move is validated server-side with
+  python-chess; puzzle answers never reach the browser
+
+| Map | Lesson |
+| --- | --- |
+| ![Map](docs/screenshots/map.png) | ![Lesson](docs/screenshots/lesson.png) |
+
+## Architecture
+
+- **Backend (Python)** — FastAPI + python-chess: curriculum data, move
+  validation, checkmate detection, bots, progress storage (SQLite)
+- **Frontend (React 19 + Vite)** — thin presentation layer; all game
+  logic goes through the `/api` REST endpoints
+
+## Quick Start
 
 ```bash
-./start.sh        # 一键:构建前端 + 起后端,打开 http://localhost:8000
+./start.sh        # builds the frontend and starts the server
+                  # → http://localhost:8000
 ```
 
-开发模式(前后端分离热更新):
+With Docker (image includes Stockfish):
 
 ```bash
-# 终端 1:后端
+docker compose up --build   # → http://localhost:8000
+```
+
+Development mode (hot reload):
+
+```bash
+# terminal 1: backend
 python3 -m venv .venv && .venv/bin/pip install -e 'backend[dev]'
 cd backend && ../.venv/bin/uvicorn app.main:app --reload --port 8000
 
-# 终端 2:前端(/api 已代理到 :8000)
-npm install && npm run dev   # http://localhost:3000
+# terminal 2: frontend (/api is proxied to :8000)
+npm install && npm run dev   # → http://localhost:3000
 ```
 
-## Docker
-
-```bash
-docker compose up --build    # http://localhost:8000(镜像内含 stockfish)
-```
-
-## 测试
+## Testing
 
 ```bash
 cd backend && ../.venv/bin/pytest tests/ -v
 ```
 
-## 课程数据
+The suite covers the bot logic, the lesson session state machine, the
+progress rules, the REST API, and a full validation of every FEN and
+answer move in the curriculum data.
 
-- 数据源:`backend/data/curriculum.json`(由 `backend/scripts/convert_curriculum.sh`
-  从旧版 `src/data/curriculum.ts` 一次性转换生成,原文件已删除)。
-- 修改课程后直接编辑 JSON,然后跑校验:
-  `python3 backend/scripts/validate_curriculum.py`(校验所有 FEN 与答案走法)。
+## Curriculum Data
+
+- Source of truth: `backend/data/curriculum.json`
+  (5 chapters, 20 levels, 82 steps; lesson text in Chinese).
+- After editing, run the validator — every FEN must be legal and every
+  answer move must be playable:
+
+  ```bash
+  python3 backend/scripts/validate_curriculum.py
+  ```
+
+- Book page scans are **not** included (see `data/README.md`); the app
+  does not need them.
+
+## License & Copyright
+
+- Code: **GPL-3.0** (see [LICENSE](LICENSE)), consistent with the GPL-3.0
+  dependencies python-chess and Stockfish.
+- *Bobby Fischer Teaches Chess* (book content and page images) is
+  copyrighted by its publisher. This repository contains and distributes
+  no book pages. Lesson text is original Chinese writing; the puzzles are
+  classic checkmate patterns.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
