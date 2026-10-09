@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import ChessBoard from '@/components/ChessBoard'
 import Confetti from '@/components/Confetti'
 import ThemeToggle from '@/components/ThemeToggle'
+import LangToggle from '@/components/LangToggle'
+import { useLang } from '@/i18n'
 import { sounds } from '@/lib/sound'
 import { api, ApiError, type SessionState } from '@/lib/api'
 import { useProgress } from '@/state/progress'
@@ -14,14 +16,8 @@ interface Props {
   onNext: (() => void) | null
 }
 
-const BOT_LABELS: Record<string, string> = {
-  random: '随便走',
-  greedy: '贪吃鬼',
-  smart: '小聪明',
-  master: '大师 Stockfish',
-}
-
 export default function Lesson({ levelId, onExit, onNext }: Props) {
+  const { t, lang } = useLang()
   const { refresh } = useProgress()
   const { stockfishAvailable } = useCurriculum()
 
@@ -38,7 +34,7 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
 
   const start = useCallback(async () => {
     try {
-      const s = await api.createSession(levelId)
+      const s = await api.createSession(levelId, lang)
       setSt(s)
       setError(null)
       setReplyShown(false)
@@ -46,9 +42,9 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
       setWrongChoices([])
       setShowHint(false)
     } catch (e) {
-      setError(e instanceof Error ? e.message : '加载失败,请检查后端是否启动')
+      setError(e instanceof Error ? e.message : t('lesson.loadError'))
     }
-  }, [levelId])
+  }, [levelId, lang, t])
 
   useEffect(() => {
     void start()
@@ -104,7 +100,7 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
       }
       apply(s)
     } catch (e) {
-      if (!(await recover404(e))) setError(e instanceof Error ? e.message : '出错了')
+      if (!(await recover404(e))) setError(e instanceof Error ? e.message : t('common.error'))
     } finally {
       setBusy(false)
     }
@@ -125,7 +121,7 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
       }
       apply(s)
     } catch (e) {
-      if (!(await recover404(e))) setError(e instanceof Error ? e.message : '出错了')
+      if (!(await recover404(e))) setError(e instanceof Error ? e.message : t('common.error'))
     } finally {
       setBusy(false)
     }
@@ -139,7 +135,7 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
       if (s.finished) sounds.fanfare()
       apply(s)
     } catch (e) {
-      if (!(await recover404(e))) setError(e instanceof Error ? e.message : '出错了')
+      if (!(await recover404(e))) setError(e instanceof Error ? e.message : t('common.error'))
     } finally {
       setBusy(false)
     }
@@ -151,7 +147,7 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
     try {
       apply(await api.restartPlay(st.session_id, bot))
     } catch (e) {
-      if (!(await recover404(e))) setError(e instanceof Error ? e.message : '出错了')
+      if (!(await recover404(e))) setError(e instanceof Error ? e.message : t('common.error'))
     } finally {
       setBusy(false)
     }
@@ -165,14 +161,14 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
           <p className="font-bold text-[var(--board-check)] mb-4">{error}</p>
           <button onClick={() => void start()}
             className="state-layer px-6 py-3 rounded-full bg-primary text-on-primary font-bold transition">
-            重试
+            {t('common.retry')}
           </button>
         </div>
       </div>
     )
   }
   if (!st) {
-    return <div className="min-h-screen bg-surface text-on-surface flex items-center justify-center font-display text-2xl">加载中……</div>
+    return <div className="min-h-screen bg-surface text-on-surface flex items-center justify-center font-display text-2xl">{t('app.loading')}</div>
   }
 
   const step = st.step
@@ -190,10 +186,10 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
         <Confetti />
         <div className="w-full max-w-md bg-surface-container rounded-3xl elev-2 p-6 text-center">
           <div className="text-5xl mb-1">🏆</div>
-          <h2 className="font-display text-2xl mb-1">闯关成功!</h2>
+          <h2 className="font-display text-2xl mb-1">{t('lesson.finished.title')}</h2>
           <p className="text-on-surface-variant mb-3">{st.chapter_title} · {st.level_title}</p>
           <div className="inline-block px-4 py-1.5 rounded-full text-sm font-bold text-white mb-4" style={{ backgroundColor: accent }}>
-            获得技能:{st.level_skill}
+            {t('lesson.finished.skill')}{st.level_skill}
           </div>
           <div className="flex justify-center gap-2 mb-5">
             {[1, 2, 3].map((n) => (
@@ -202,22 +198,22 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
             ))}
           </div>
           <p className="text-sm text-on-surface-variant mb-6">
-            {st.mistakes === 0 ? '完美通关,一次都没错!太厉害了!' : `错了 ${st.mistakes} 次,复习一下还能拿更多星星哦!`}
+            {st.mistakes === 0 ? t('lesson.finished.perfect') : t('lesson.finished.mistakes', { n: st.mistakes })}
           </p>
           <div className="flex flex-col gap-3">
             {onNext && (
               <button onClick={onNext} className="state-layer w-full py-3.5 rounded-full bg-primary text-on-primary font-bold text-lg flex items-center justify-center gap-2 transition elev-1">
-                下一关 <ArrowRight size={20} />
+                {t('common.next')} <ArrowRight size={20} />
               </button>
             )}
             <div className="flex gap-3">
               <button onClick={() => void start()}
                 className="flex-1 py-3 rounded-full border border-outline-variant text-primary font-bold flex items-center justify-center gap-2 hover:bg-primary/10 transition">
-                <RotateCcw size={18} /> 再玩一次
+                <RotateCcw size={18} /> {t('common.playAgain')}
               </button>
               <button onClick={onExit}
                 className="flex-1 py-3 rounded-full border border-outline-variant text-primary font-bold flex items-center justify-center gap-2 hover:bg-primary/10 transition">
-                <MapIcon size={18} /> 回地图
+                <MapIcon size={18} /> {t('common.backToMap')}
               </button>
             </div>
           </div>
@@ -231,7 +227,7 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
       {/* 顶栏 */}
       <div className="sticky top-0 z-20 bg-surface/95 backdrop-blur border-b border-outline-variant">
         <div className="max-w-4xl mx-auto px-4 py-2 flex items-center gap-3">
-          <button onClick={onExit} className="p-2 rounded-full hover:bg-on-surface/10 transition" aria-label="返回">
+          <button onClick={onExit} className="p-2 rounded-full hover:bg-on-surface/10 transition" aria-label={t('nav.back')}>
             <ArrowLeft size={22} />
           </button>
           <div className="flex-1 min-w-0">
@@ -244,6 +240,7 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
                 style={{ backgroundColor: i < st.step_index ? accent : i === st.step_index ? 'var(--star)' : 'var(--outline-variant)' }} />
             ))}
           </div>
+          <LangToggle />
           <ThemeToggle />
         </div>
       </div>
@@ -270,7 +267,7 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
               )}
               {step.type === 'play' && (
                 <div className="mt-3 text-center text-sm font-bold text-on-surface-variant">
-                  {awaitingReply ? '🤖 对方思考中……' : `你已走 ${st.my_moves} 步`}
+                  {awaitingReply ? t('lesson.thinking') : t('lesson.myMoves', { n: st.my_moves })}
                 </div>
               )}
             </div>
@@ -287,7 +284,7 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
                 <button onClick={() => void goNext()} disabled={busy}
                   className="state-layer mt-4 px-6 py-2.5 rounded-full text-white font-bold flex items-center gap-2 transition disabled:opacity-50"
                   style={{ backgroundColor: accent }}>
-                  我明白了 <ArrowRight size={18} />
+                  {t('common.iUnderstand')} <ArrowRight size={18} />
                 </button>
               </div>
             )}
@@ -295,7 +292,7 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
             {isPuzzle && (
               <div className="bg-surface-container rounded-3xl p-5 elev-1">
                 <div className="inline-block px-3 py-1 rounded-full text-xs font-bold text-white mb-3" style={{ backgroundColor: accent }}>
-                  {step.type === 'mate' ? '⚡ 一步杀' : step.type === 'line' ? '🔥 连续杀' : '🎯 找到这步棋'}
+                  {step.type === 'mate' ? t('lesson.badge.mate') : step.type === 'line' ? t('lesson.badge.line') : t('lesson.badge.move')}
                 </div>
                 <p className="text-base font-bold leading-relaxed text-on-surface">
                   {step.type === 'line' ? st.line_prompt : step.prompt}
@@ -306,10 +303,10 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
                     {step.hint && (
                       <button onClick={() => setShowHint(!showHint)}
                         className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-outline-variant text-primary font-bold text-sm hover:bg-primary/10 transition">
-                        <Lightbulb size={16} /> 提示
+                        <Lightbulb size={16} /> {t('lesson.hint')}
                       </button>
                     )}
-                    <span className="text-sm text-on-surface-variant">点棋子 → 点目标格</span>
+                    <span className="text-sm text-on-surface-variant">{t('lesson.tapGuide')}</span>
                   </div>
                 )}
                 {showHint && !st.solved && step.hint && (
@@ -326,12 +323,12 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
                     <button onClick={() => void goNext()} disabled={busy}
                       className="state-layer mt-4 px-6 py-2.5 rounded-full text-white font-bold flex items-center gap-2 transition disabled:opacity-50"
                       style={{ backgroundColor: accent }}>
-                      继续 <ArrowRight size={18} />
+                      {t('common.continue')} <ArrowRight size={18} />
                     </button>
                   </div>
                 )}
                 {wrongFlash > 0 && !st.solved && (
-                  <p className="mt-3 text-[var(--board-check)] font-bold text-sm">这一步不对,再想想,你可以的!</p>
+                  <p className="mt-3 text-[var(--board-check)] font-bold text-sm">{t('lesson.wrong')}</p>
                 )}
               </div>
             )}
@@ -339,7 +336,7 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
             {step.type === 'choice' && (
               <div className="bg-surface-container rounded-3xl p-5 elev-1">
                 <div className="inline-block px-3 py-1 rounded-full text-xs font-bold text-white mb-3" style={{ backgroundColor: accent }}>
-                  🤔 想一想
+                  {t('lesson.badge.choice')}
                 </div>
                 <p className="text-base font-bold leading-relaxed text-on-surface mb-4">{step.question}</p>
                 <div className="flex flex-col gap-2.5">
@@ -369,7 +366,7 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
                     <button onClick={() => void goNext()} disabled={busy}
                       className="state-layer mt-4 px-6 py-2.5 rounded-full text-white font-bold flex items-center gap-2 transition disabled:opacity-50"
                       style={{ backgroundColor: accent }}>
-                      继续 <ArrowRight size={18} />
+                      {t('common.continue')} <ArrowRight size={18} />
                     </button>
                   </div>
                 )}
@@ -379,7 +376,7 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
             {step.type === 'play' && (
               <div className="bg-surface-container rounded-3xl p-5 elev-1">
                 <div className="inline-block px-3 py-1 rounded-full text-xs font-bold text-white mb-3" style={{ backgroundColor: accent }}>
-                  <Swords size={12} className="inline -mt-0.5 mr-1" /> 实战对弈
+                  <Swords size={12} className="inline -mt-0.5 mr-1" /> {t('lesson.badge.play')}
                 </div>
                 <p className="text-base font-bold leading-relaxed text-on-surface">{step.prompt}</p>
 
@@ -393,7 +390,7 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
                             ? 'bg-primary text-on-primary'
                             : 'border border-outline-variant text-on-surface-variant hover:bg-primary/10'
                         }`}>
-                        {BOT_LABELS[b]}
+                        {t(`lesson.bot.${b}`)}
                       </button>
                     ))}
                     {stockfishAvailable && (
@@ -403,7 +400,7 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
                             ? 'bg-primary text-on-primary'
                             : 'border border-outline-variant text-on-surface-variant hover:bg-primary/10'
                         }`}>
-                        {BOT_LABELS.master}
+                        {t('lesson.bot.master')}
                       </button>
                     )}
                   </div>
@@ -414,7 +411,7 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
                     {step.hint && (
                       <button onClick={() => setShowHint(!showHint)}
                         className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-outline-variant text-primary font-bold text-sm hover:bg-primary/10 transition">
-                        <Lightbulb size={16} /> 提示
+                        <Lightbulb size={16} /> {t('lesson.hint')}
                       </button>
                     )}
                     {showHint && (
@@ -433,7 +430,7 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
                     <button onClick={() => void goNext()} disabled={busy}
                       className="state-layer mt-4 px-6 py-2.5 rounded-full text-white font-bold flex items-center gap-2 transition disabled:opacity-50"
                       style={{ backgroundColor: accent }}>
-                      继续 <ArrowRight size={18} />
+                      {t('common.continue')} <ArrowRight size={18} />
                     </button>
                   </div>
                 )}
@@ -445,7 +442,7 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
                     <button onClick={() => void restart()} disabled={busy}
                       className="state-layer mt-4 px-6 py-2.5 rounded-full text-white font-bold flex items-center gap-2 transition disabled:opacity-50"
                       style={{ backgroundColor: accent }}>
-                      <RotateCcw size={18} /> 再来一盘
+                      <RotateCcw size={18} /> {t('common.playAgain')}
                     </button>
                   </div>
                 )}

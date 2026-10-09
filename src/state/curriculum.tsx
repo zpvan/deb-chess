@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import { api, type ChapterData, type LevelData } from '@/lib/api'
+import { useLang } from '@/i18n'
 
 export interface FlatLevel {
   chapter: ChapterData
@@ -28,11 +29,13 @@ const EMPTY: CurriculumCtx = {
 }
 
 export function CurriculumProvider({ children }: { children: ReactNode }) {
+  const { lang } = useLang()
   const [data, setData] = useState<CurriculumCtx>(EMPTY)
 
   useEffect(() => {
+    setData((d) => ({ ...d, loading: true }))
     api
-      .getCurriculum()
+      .getCurriculum(lang)
       .then((res) => {
         const flatLevels: FlatLevel[] = res.chapters.flatMap((chapter) =>
           chapter.levels.map((level) => ({ chapter, level, index: -1 })),
@@ -48,7 +51,7 @@ export function CurriculumProvider({ children }: { children: ReactNode }) {
         })
       })
       .catch(() => setData({ ...EMPTY, loading: false }))
-  }, [])
+  }, [lang])
 
   return <Ctx.Provider value={data}>{children}</Ctx.Provider>
 }

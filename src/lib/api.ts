@@ -15,14 +15,26 @@ async function req<T>(path: string, init?: RequestInit): Promise<T> {
     ...init,
   })
   if (!res.ok) {
-    let msg = `请求失败(${res.status})`
+    let msg = `Request failed (${res.status})`
     try {
       const d = await res.json()
+      const lang = currentLang()
       if (typeof d.detail === 'string') msg = d.detail
+      else if (d.detail && typeof d.detail === 'object') {
+        msg = d.detail[lang] ?? d.detail.en ?? msg
+      }
     } catch { /* ignore */ }
     throw new ApiError(msg, res.status)
   }
   return res.json()
+}
+
+function currentLang(): 'en' | 'zh' {
+  try {
+    const l = localStorage.getItem('deb-chess-lang')
+    if (l === 'zh') return 'zh'
+  } catch { /* ignore */ }
+  return 'en'
 }
 
 export interface PublicStep {
@@ -109,10 +121,10 @@ export interface ProgressResponse {
 }
 
 export const api = {
-  getCurriculum: () => req<CurriculumResponse>('/curriculum'),
-  getProgress: () => req<ProgressResponse>('/progress'),
-  createSession: (levelId: string) =>
-    req<SessionState>('/sessions', { method: 'POST', body: JSON.stringify({ level_id: levelId }) }),
+  getCurriculum: (lang: string) => req<CurriculumResponse>(`/curriculum?lang=${lang}`),
+  getProgress: (lang: string) => req<ProgressResponse>(`/progress?lang=${lang}`),
+  createSession: (levelId: string, lang: string) =>
+    req<SessionState>('/sessions', { method: 'POST', body: JSON.stringify({ level_id: levelId, lang }) }),
   getSession: (id: string) => req<SessionState>(`/sessions/${id}`),
   sessionMove: (id: string, move: string) =>
     req<SessionState>(`/sessions/${id}/move`, { method: 'POST', body: JSON.stringify({ move }) }),

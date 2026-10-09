@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { api } from '@/lib/api'
+import { useLang } from '@/i18n'
 
 interface ProgressCtx {
   xp: number
@@ -12,18 +13,19 @@ interface ProgressCtx {
 const Ctx = createContext<ProgressCtx | null>(null)
 
 export function ProgressProvider({ children }: { children: ReactNode }) {
+  const { lang } = useLang()
   const [levels, setLevels] = useState<Record<string, number>>({})
   const [xp, setXp] = useState(0)
   const [totalStars, setTotalStars] = useState(0)
   const [rank, setRank] = useState({ name: '小士兵', icon: '♟' })
 
   const refresh = useCallback(async () => {
-    const p = await api.getProgress()
+    const p = await api.getProgress(lang)
     setLevels(p.levels)
     setXp(p.xp)
     setTotalStars(p.total_stars)
     setRank({ name: p.rank_name, icon: p.rank_icon })
-  }, [])
+  }, [lang])
 
   useEffect(() => {
     refresh().catch(() => undefined)

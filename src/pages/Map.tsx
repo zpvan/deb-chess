@@ -1,4 +1,6 @@
 import ThemeToggle from '@/components/ThemeToggle'
+import LangToggle from '@/components/LangToggle'
+import { useLang } from '@/i18n'
 import { useProgress } from '@/state/progress'
 import { useCurriculum } from '@/state/curriculum'
 import { Star, Play, ChevronLeft } from 'lucide-react'
@@ -9,6 +11,7 @@ interface Props {
 }
 
 export default function MapPage({ onOpen, onHome }: Props) {
+  const { t } = useLang()
   const { starsOf, totalStars, xp, rank } = useProgress()
   const { chapters, flatLevels } = useCurriculum()
 
@@ -17,16 +20,17 @@ export default function MapPage({ onOpen, onHome }: Props) {
       {/* 顶部状态栏 */}
       <div className="sticky top-0 z-20 bg-surface/95 backdrop-blur border-b border-outline-variant">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
-          <button onClick={onHome} className="p-2 rounded-full hover:bg-on-surface/10 transition" aria-label="首页">
+          <button onClick={onHome} className="p-2 rounded-full hover:bg-on-surface/10 transition" aria-label={t('nav.home')}>
             <ChevronLeft size={22} />
           </button>
-          <div className="font-display text-xl flex-1">闯关地图</div>
+          <div className="font-display text-xl flex-1">{t('map.title')}</div>
           <div className="flex items-center gap-1 text-sm font-bold bg-primary-container text-on-primary-container px-3 py-1.5 rounded-full">
             <Star size={15} className="fill-star text-star" /> {totalStars}
           </div>
           <div className="text-sm font-bold bg-surface-container px-3 py-1.5 rounded-full">
-            {rank.icon} {rank.name} · {xp}分
+            {rank.icon} {rank.name} · {t('common.xpSuffix', { xp })}
           </div>
+          <LangToggle />
           <ThemeToggle />
         </div>
       </div>
@@ -64,7 +68,7 @@ export default function MapPage({ onOpen, onHome }: Props) {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="font-display text-lg leading-tight">
-                          第 {idx + 1} 关 · {lv.title}
+                          {t('map.levelPrefix', { n: idx + 1 })}{lv.title}
                         </div>
                         <div className="text-sm text-on-surface-variant">{lv.goal}</div>
                       </div>
@@ -85,7 +89,7 @@ export default function MapPage({ onOpen, onHome }: Props) {
         ))}
 
         <p className="text-center text-sm text-on-surface-variant mt-4">
-          先把终局的“杀王”练熟,再学中局战术,最后学开局。循序渐进,每关都能拿星星!
+          {t('map.footerTip')}
         </p>
       </div>
     </div>
