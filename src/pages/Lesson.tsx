@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import ChessBoard from '@/components/ChessBoard'
 import Confetti from '@/components/Confetti'
+import ThemeToggle from '@/components/ThemeToggle'
 import { sounds } from '@/lib/sound'
 import { api, ApiError, type SessionState } from '@/lib/api'
 import { useProgress } from '@/state/progress'
@@ -159,11 +160,11 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
   // ---------------- 加载/错误 ----------------
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#fff8ea] px-4">
-        <div className="bg-[#fffdf6] rounded-3xl border-2 border-[#1f1a17]/10 p-8 text-center max-w-sm">
-          <p className="font-bold text-[#c0392b] mb-4">{error}</p>
+      <div className="min-h-screen flex items-center justify-center bg-surface px-4">
+        <div className="bg-surface-container rounded-3xl elev-1 p-8 text-center max-w-sm">
+          <p className="font-bold text-[var(--board-check)] mb-4">{error}</p>
           <button onClick={() => void start()}
-            className="px-6 py-3 rounded-full bg-[#1f1a17] text-white font-bold hover:bg-[#3a322c] transition">
+            className="state-layer px-6 py-3 rounded-full bg-primary text-on-primary font-bold transition">
             重试
           </button>
         </div>
@@ -171,7 +172,7 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
     )
   }
   if (!st) {
-    return <div className="min-h-screen bg-[#fff8ea] flex items-center justify-center font-display text-2xl">加载中……</div>
+    return <div className="min-h-screen bg-surface text-on-surface flex items-center justify-center font-display text-2xl">加载中……</div>
   }
 
   const step = st.step
@@ -185,37 +186,37 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
   // ---------------- 通关结算 ----------------
   if (st.finished) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4 py-10" style={{ backgroundColor: st.chapter_soft }}>
+      <div className="min-h-screen flex items-center justify-center px-4 py-10 bg-surface">
         <Confetti />
-        <div className="w-full max-w-md bg-[#fffdf6] rounded-3xl shadow-xl p-6 text-center border-4 border-[#1f1a17]">
+        <div className="w-full max-w-md bg-surface-container rounded-3xl elev-2 p-6 text-center">
           <div className="text-5xl mb-1">🏆</div>
           <h2 className="font-display text-2xl mb-1">闯关成功!</h2>
-          <p className="text-[#6b5d4f] mb-3">{st.chapter_title} · {st.level_title}</p>
+          <p className="text-on-surface-variant mb-3">{st.chapter_title} · {st.level_title}</p>
           <div className="inline-block px-4 py-1.5 rounded-full text-sm font-bold text-white mb-4" style={{ backgroundColor: accent }}>
             获得技能:{st.level_skill}
           </div>
           <div className="flex justify-center gap-2 mb-5">
             {[1, 2, 3].map((n) => (
               <Star key={n} size={44} strokeWidth={1.5}
-                className={n <= st.stars ? 'fill-[#f7c948] text-[#b8860b]' : 'fill-[#ece5d8] text-[#cfc4b0]'} />
+                className={n <= st.stars ? 'fill-star text-star' : 'fill-outline-variant/30 text-outline-variant'} />
             ))}
           </div>
-          <p className="text-sm text-[#6b5d4f] mb-6">
+          <p className="text-sm text-on-surface-variant mb-6">
             {st.mistakes === 0 ? '完美通关,一次都没错!菲舍尔也会为你鼓掌。' : `错了 ${st.mistakes} 次,复习一下还能拿更多星星哦!`}
           </p>
           <div className="flex flex-col gap-3">
             {onNext && (
-              <button onClick={onNext} className="w-full py-3.5 rounded-full bg-[#1f1a17] text-white font-bold text-lg flex items-center justify-center gap-2 hover:bg-[#3a322c] transition">
+              <button onClick={onNext} className="state-layer w-full py-3.5 rounded-full bg-primary text-on-primary font-bold text-lg flex items-center justify-center gap-2 transition elev-1">
                 下一关 <ArrowRight size={20} />
               </button>
             )}
             <div className="flex gap-3">
               <button onClick={() => void start()}
-                className="flex-1 py-3 rounded-full border-2 border-[#1f1a17] font-bold flex items-center justify-center gap-2 hover:bg-[#f3ead9] transition">
+                className="flex-1 py-3 rounded-full border border-outline-variant text-primary font-bold flex items-center justify-center gap-2 hover:bg-primary/10 transition">
                 <RotateCcw size={18} /> 再玩一次
               </button>
               <button onClick={onExit}
-                className="flex-1 py-3 rounded-full border-2 border-[#1f1a17] font-bold flex items-center justify-center gap-2 hover:bg-[#f3ead9] transition">
+                className="flex-1 py-3 rounded-full border border-outline-variant text-primary font-bold flex items-center justify-center gap-2 hover:bg-primary/10 transition">
                 <MapIcon size={18} /> 回地图
               </button>
             </div>
@@ -226,11 +227,11 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: st.chapter_soft }}>
+    <div className="min-h-screen bg-surface text-on-surface">
       {/* 顶栏 */}
-      <div className="sticky top-0 z-20 bg-[#fffdf6]/95 backdrop-blur border-b-2 border-[#1f1a17]/10">
+      <div className="sticky top-0 z-20 bg-surface/95 backdrop-blur border-b border-outline-variant">
         <div className="max-w-4xl mx-auto px-4 py-2 flex items-center gap-3">
-          <button onClick={onExit} className="p-2 rounded-full hover:bg-[#f3ead9] transition" aria-label="返回">
+          <button onClick={onExit} className="p-2 rounded-full hover:bg-on-surface/10 transition" aria-label="返回">
             <ArrowLeft size={22} />
           </button>
           <div className="flex-1 min-w-0">
@@ -240,9 +241,10 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
           <div className="flex items-center gap-1.5">
             {Array.from({ length: st.step_count }).map((_, i) => (
               <span key={i} className="w-2.5 h-2.5 rounded-full transition"
-                style={{ backgroundColor: i < st.step_index ? accent : i === st.step_index ? '#f7c948' : '#ddd2bd' }} />
+                style={{ backgroundColor: i < st.step_index ? accent : i === st.step_index ? 'var(--star)' : 'var(--outline-variant)' }} />
             ))}
           </div>
+          <ThemeToggle />
         </div>
       </div>
 
@@ -264,10 +266,10 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
                 checkSquare={awaitingReply ? null : st.check_square}
               />
               {step.sideLabel && (
-                <div className="mt-3 text-center text-sm font-bold text-[#6b5d4f]">{step.sideLabel}</div>
+                <div className="mt-3 text-center text-sm font-bold text-on-surface-variant">{step.sideLabel}</div>
               )}
               {step.type === 'play' && (
-                <div className="mt-3 text-center text-sm font-bold text-[#6b5d4f]">
+                <div className="mt-3 text-center text-sm font-bold text-on-surface-variant">
                   {awaitingReply ? '🤖 对方思考中……' : `你已走 ${st.my_moves} 步`}
                 </div>
               )}
@@ -277,13 +279,13 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
           {/* 文字区 */}
           <div>
             {step.type === 'teach' && (
-              <div className="bg-[#fffdf6] rounded-3xl border-2 border-[#1f1a17]/10 p-5 shadow-sm">
+              <div className="bg-surface-container rounded-3xl p-5 elev-1">
                 <h3 className="font-display text-xl mb-2" style={{ color: accent }}>{step.title}</h3>
                 {(step.text ?? []).map((t, i) => (
-                  <p key={i} className="text-[15px] leading-relaxed text-[#3a322c] mb-2">{t}</p>
+                  <p key={i} className="text-[15px] leading-relaxed text-on-surface mb-2">{t}</p>
                 ))}
                 <button onClick={() => void goNext()} disabled={busy}
-                  className="mt-4 px-6 py-2.5 rounded-full text-white font-bold flex items-center gap-2 hover:opacity-90 transition disabled:opacity-50"
+                  className="state-layer mt-4 px-6 py-2.5 rounded-full text-white font-bold flex items-center gap-2 transition disabled:opacity-50"
                   style={{ backgroundColor: accent }}>
                   我明白了 <ArrowRight size={18} />
                 </button>
@@ -291,11 +293,11 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
             )}
 
             {isPuzzle && (
-              <div className="bg-[#fffdf6] rounded-3xl border-2 border-[#1f1a17]/10 p-5 shadow-sm">
+              <div className="bg-surface-container rounded-3xl p-5 elev-1">
                 <div className="inline-block px-3 py-1 rounded-full text-xs font-bold text-white mb-3" style={{ backgroundColor: accent }}>
                   {step.type === 'mate' ? '⚡ 一步杀' : step.type === 'line' ? '🔥 连续杀' : '🎯 找到这步棋'}
                 </div>
-                <p className="text-base font-bold leading-relaxed text-[#3a322c]">
+                <p className="text-base font-bold leading-relaxed text-on-surface">
                   {step.type === 'line' ? st.line_prompt : step.prompt}
                 </p>
 
@@ -303,43 +305,43 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
                   <div className="mt-4 flex items-center gap-3">
                     {step.hint && (
                       <button onClick={() => setShowHint(!showHint)}
-                        className="flex items-center gap-1.5 px-4 py-2 rounded-full border-2 border-[#b8860b] text-[#b8860b] font-bold text-sm hover:bg-[#fdf3d7] transition">
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-outline-variant text-primary font-bold text-sm hover:bg-primary/10 transition">
                         <Lightbulb size={16} /> 提示
                       </button>
                     )}
-                    <span className="text-sm text-[#a3927c]">点棋子 → 点目标格</span>
+                    <span className="text-sm text-on-surface-variant">点棋子 → 点目标格</span>
                   </div>
                 )}
                 {showHint && !st.solved && step.hint && (
-                  <div className="mt-3 p-3 rounded-2xl bg-[#fdf3d7] text-[#7a5c10] text-[15px] leading-relaxed">
+                  <div className="mt-3 p-3 rounded-2xl bg-hint-container text-on-hint-container text-[15px] leading-relaxed">
                     💡 {step.hint}
                   </div>
                 )}
 
                 {st.solved && (
                   <div className="mt-4">
-                    <div className="p-4 rounded-2xl bg-[#e7f5ec] border-2 border-[#2E7D52]/30 text-[#20573b] font-bold leading-relaxed">
+                    <div className="p-4 rounded-2xl bg-success-container text-on-success-container font-bold leading-relaxed">
                       🎉 {st.success_text}
                     </div>
                     <button onClick={() => void goNext()} disabled={busy}
-                      className="mt-4 px-6 py-2.5 rounded-full text-white font-bold flex items-center gap-2 hover:opacity-90 transition disabled:opacity-50"
+                      className="state-layer mt-4 px-6 py-2.5 rounded-full text-white font-bold flex items-center gap-2 transition disabled:opacity-50"
                       style={{ backgroundColor: accent }}>
                       继续 <ArrowRight size={18} />
                     </button>
                   </div>
                 )}
                 {wrongFlash > 0 && !st.solved && (
-                  <p className="mt-3 text-[#c0392b] font-bold text-sm">这一步不对,再想想,你可以的!</p>
+                  <p className="mt-3 text-[var(--board-check)] font-bold text-sm">这一步不对,再想想,你可以的!</p>
                 )}
               </div>
             )}
 
             {step.type === 'choice' && (
-              <div className="bg-[#fffdf6] rounded-3xl border-2 border-[#1f1a17]/10 p-5 shadow-sm">
+              <div className="bg-surface-container rounded-3xl p-5 elev-1">
                 <div className="inline-block px-3 py-1 rounded-full text-xs font-bold text-white mb-3" style={{ backgroundColor: accent }}>
                   🤔 想一想
                 </div>
-                <p className="text-base font-bold leading-relaxed text-[#3a322c] mb-4">{step.question}</p>
+                <p className="text-base font-bold leading-relaxed text-on-surface mb-4">{step.question}</p>
                 <div className="flex flex-col gap-2.5">
                   {(step.options ?? []).map((opt, i) => {
                     const isRight = pickedChoice === i
@@ -347,12 +349,12 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
                     return (
                       <button key={i} onClick={() => void handleChoice(i)}
                         disabled={st.solved || busy}
-                        className={`text-left px-5 py-3.5 rounded-2xl border-2 font-bold text-[16px] transition ${
+                        className={`text-left px-5 py-3.5 rounded-2xl border font-bold text-[16px] transition ${
                           isRight
-                            ? 'bg-[#e7f5ec] border-[#2E7D52] text-[#20573b]'
+                            ? 'bg-success-container border-transparent text-on-success-container'
                             : isWrong
-                              ? 'bg-[#fdecea] border-[#e05252]/40 text-[#c0392b] line-through opacity-70'
-                              : 'bg-white border-[#1f1a17]/15 hover:border-[#1f1a17]/50 text-[#3a322c]'
+                              ? 'bg-error-container border-transparent text-on-error-container line-through opacity-70'
+                              : 'bg-surface border-outline-variant hover:bg-primary/10 text-on-surface'
                         }`}>
                         {opt}
                       </button>
@@ -361,11 +363,11 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
                 </div>
                 {st.solved && (
                   <div className="mt-4">
-                    <div className="p-4 rounded-2xl bg-[#e7f5ec] border-2 border-[#2E7D52]/30 text-[#20573b] font-bold leading-relaxed">
+                    <div className="p-4 rounded-2xl bg-success-container text-on-success-container font-bold leading-relaxed">
                       ✅ {st.success_text}
                     </div>
                     <button onClick={() => void goNext()} disabled={busy}
-                      className="mt-4 px-6 py-2.5 rounded-full text-white font-bold flex items-center gap-2 hover:opacity-90 transition disabled:opacity-50"
+                      className="state-layer mt-4 px-6 py-2.5 rounded-full text-white font-bold flex items-center gap-2 transition disabled:opacity-50"
                       style={{ backgroundColor: accent }}>
                       继续 <ArrowRight size={18} />
                     </button>
@@ -375,31 +377,31 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
             )}
 
             {step.type === 'play' && (
-              <div className="bg-[#fffdf6] rounded-3xl border-2 border-[#1f1a17]/10 p-5 shadow-sm">
+              <div className="bg-surface-container rounded-3xl p-5 elev-1">
                 <div className="inline-block px-3 py-1 rounded-full text-xs font-bold text-white mb-3" style={{ backgroundColor: accent }}>
                   <Swords size={12} className="inline -mt-0.5 mr-1" /> 实战对弈
                 </div>
-                <p className="text-base font-bold leading-relaxed text-[#3a322c]">{step.prompt}</p>
+                <p className="text-base font-bold leading-relaxed text-on-surface">{step.prompt}</p>
 
                 {/* 开局前可选对手档位 */}
                 {st.play_status === 'playing' && st.my_moves === 0 && (
                   <div className="mt-3 flex flex-wrap gap-2">
                     {(['random', 'greedy', 'smart'] as const).map((b) => (
                       <button key={b} onClick={() => void restart(b)} disabled={busy}
-                        className={`px-3 py-1.5 rounded-full text-sm font-bold border-2 transition ${
+                        className={`px-3 py-1.5 rounded-full text-sm font-bold transition ${
                           st.bot_style === b
-                            ? 'bg-[#1f1a17] text-white border-[#1f1a17]'
-                            : 'border-[#1f1a17]/20 text-[#6b5d4f] hover:border-[#1f1a17]/60'
+                            ? 'bg-primary text-on-primary'
+                            : 'border border-outline-variant text-on-surface-variant hover:bg-primary/10'
                         }`}>
                         {BOT_LABELS[b]}
                       </button>
                     ))}
                     {stockfishAvailable && (
                       <button onClick={() => void restart('master')} disabled={busy}
-                        className={`px-3 py-1.5 rounded-full text-sm font-bold border-2 transition ${
+                        className={`px-3 py-1.5 rounded-full text-sm font-bold transition ${
                           st.bot_style === 'master'
-                            ? 'bg-[#7C4DA0] text-white border-[#7C4DA0]'
-                            : 'border-[#7C4DA0]/40 text-[#7C4DA0] hover:border-[#7C4DA0]'
+                            ? 'bg-primary text-on-primary'
+                            : 'border border-outline-variant text-on-surface-variant hover:bg-primary/10'
                         }`}>
                         {BOT_LABELS.master}
                       </button>
@@ -411,12 +413,12 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
                   <div className="mt-4">
                     {step.hint && (
                       <button onClick={() => setShowHint(!showHint)}
-                        className="flex items-center gap-1.5 px-4 py-2 rounded-full border-2 border-[#b8860b] text-[#b8860b] font-bold text-sm hover:bg-[#fdf3d7] transition">
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-outline-variant text-primary font-bold text-sm hover:bg-primary/10 transition">
                         <Lightbulb size={16} /> 提示
                       </button>
                     )}
                     {showHint && (
-                      <div className="mt-3 p-3 rounded-2xl bg-[#fdf3d7] text-[#7a5c10] text-[15px] leading-relaxed">
+                      <div className="mt-3 p-3 rounded-2xl bg-hint-container text-on-hint-container text-[15px] leading-relaxed">
                         💡 {step.hint}
                       </div>
                     )}
@@ -425,11 +427,11 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
 
                 {st.play_status === 'won' && (
                   <div className="mt-4">
-                    <div className="p-4 rounded-2xl bg-[#e7f5ec] border-2 border-[#2E7D52]/30 text-[#20573b] font-bold leading-relaxed">
+                    <div className="p-4 rounded-2xl bg-success-container text-on-success-container font-bold leading-relaxed">
                       🏆 {st.success_text}
                     </div>
                     <button onClick={() => void goNext()} disabled={busy}
-                      className="mt-4 px-6 py-2.5 rounded-full text-white font-bold flex items-center gap-2 hover:opacity-90 transition disabled:opacity-50"
+                      className="state-layer mt-4 px-6 py-2.5 rounded-full text-white font-bold flex items-center gap-2 transition disabled:opacity-50"
                       style={{ backgroundColor: accent }}>
                       继续 <ArrowRight size={18} />
                     </button>
@@ -437,11 +439,11 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
                 )}
                 {(st.play_status === 'lost' || st.play_status === 'draw') && (
                   <div className="mt-4">
-                    <div className="p-4 rounded-2xl bg-[#fdecea] border-2 border-[#e05252]/30 text-[#8c2f23] font-bold leading-relaxed">
+                    <div className="p-4 rounded-2xl bg-error-container text-on-error-container font-bold leading-relaxed">
                       {st.end_text}
                     </div>
                     <button onClick={() => void restart()} disabled={busy}
-                      className="mt-4 px-6 py-2.5 rounded-full text-white font-bold flex items-center gap-2 hover:opacity-90 transition disabled:opacity-50"
+                      className="state-layer mt-4 px-6 py-2.5 rounded-full text-white font-bold flex items-center gap-2 transition disabled:opacity-50"
                       style={{ backgroundColor: accent }}>
                       <RotateCcw size={18} /> 再来一盘
                     </button>
