@@ -8,14 +8,37 @@ import chess
 
 from app.engine.bot import black_queen_gone, pick_bot_move
 from app.engine.stockfish_bot import StockfishBot
-from app.models import Curriculum, public_step
+from app.models import Curriculum, loc_text, public_step
 
 BOT_STYLES = ('random', 'greedy', 'smart', 'master')
 PUZZLE_TYPES = ('mate', 'move', 'line')
 
+ERRORS = {
+    'move_format': {'zh': '走法格式不对(应为如 e2e4 的格式)', 'en': 'Invalid move format (use e.g. e2e4)'},
+    'illegal': {'zh': '这步棋不符合规则哦!', 'en': 'That move is not legal!'},
+    'cannot_move': {'zh': '当前步骤不能走子', 'en': 'You cannot make a move right now'},
+    'game_over': {'zh': '本局已结束,请点击"再来一盘"', 'en': 'This game is over — tap "Play again"'},
+    'cannot_answer': {'zh': '当前步骤不能作答', 'en': 'Nothing to answer right now'},
+    'unknown_bot': {'zh': '未知对手档位', 'en': 'Unknown bot level'},
+    'finish_step': {'zh': '先完成这一步再走哦!', 'en': 'Finish this step first!'},
+    'not_play': {'zh': '当前不是对弈步骤', 'en': 'This is not a play step'},
+}
+
+FAST_MATE_TEXT = {
+    'zh': '更快将死!比参考答案还少用了步数,太厉害了!',
+    'en': 'Even faster mate! Fewer moves than the reference — amazing!',
+}
+
+PLAY_WIN_TEMPLATE = {
+    'zh': '{text}(用了 {n} 步)',
+    'en': '{text} (in {n} moves)',
+}
+
 
 class IllegalMove(ValueError):
-    pass
+    def __init__(self, code: str):
+        super().__init__(code)
+        self.code = code
 
 
 def is_draw(board: chess.Board) -> bool:
@@ -29,7 +52,7 @@ def parse_move(board: chess.Board, uci: str) -> chess.Move:
     try:
         move = chess.Move.from_uci(uci)
     except ValueError:
-        raise IllegalMove(f'走法格式不对:{uci}(应为如 e2e4 的格式)')
+        raise IllegalMove('move_format')
     if move in board.legal_moves:
         return move
     # 前端对非升变走法也可能附带 'q'(旧版 chess.js 行为),容忍之
@@ -37,17 +60,18 @@ def parse_move(board: chess.Board, uci: str) -> chess.Move:
         alt = chess.Move.from_uci(uci[:4])
         if alt in board.legal_moves:
             return alt
-    raise IllegalMove('这步棋不符合规则哦!')
+    raise IllegalMove('illegal')
 
 
 class LessonSession:
-    def __init__(self, curriculum: Curriculum, level_id: str,
+    def __init__(self, curriculum: Curriculum, level_id: str, lang: str = 'en',
                  stockfish: Optional[StockfishBot] = None, rng: Optional[random.Random] = None):
         found = curriculum.find_level(level_id)
         if found is None:
             raise KeyError(f'未知关卡:{level_id}')
         self.chapter, self.level, self.level_index = found
         self.id = uuid.uuid4().hex
+        self.lang = lang
         self.rng = rng or random.Random()
         self.stockfish = stockfish
         self.idx = 0
@@ -90,19 +114,19 @@ class LessonSession:
         line_prompt = None
         if step.type == 'line':
             i = min(self.line_pos // 2, len(step.prompts) - 1)
-            line_prompt = step.prompts[i]
+            line_prompt = loc_text(step.prompts[i], self.lang)
         return {
             'session_id': self.id,
             'level_id': self.level.id,
-            'level_title': self.level.title,
-            'level_skill': self.level.skill,
-            'chapter_title': self.chapter.title,
-            'chapter_badge': self.chapter.badge,
+            'level_title': loc_text(self.level.title, self.lang),
+            'level_skill': loc_text(self.level.skill, self.lang),
+            'chapter_title': loc_text(self.chapter.title, self.lang),
+            'chapter_badge': loc_text(self.chapter.badge, self.lang),
             'chapter_color': self.chapter.color,
             'chapter_soft': self.chapter.soft,
             'step_index': self.idx,
             'step_count': len(self.level.steps),
-            'step': public_step(step),
+            'step': public_step(step, self.lang),
             # 有 reply 时展示用户走完的中间局面,前端延迟后再展示 reply.fen
             'fen': self._display_fen or (self.board.fen() if self.board else None),
             'legal_moves': [m.uci() for m in self.board.legal_moves]
@@ -130,7 +154,7 @@ class LessonSession:
             return self.state()
         step = self.step
         if step.type in PUZZLE_TYPES + ('choice', 'play') and not self.solved:
-            raise IllegalMove('先完成这一步再走哦!')
+            raise IllegalMove('finish_step')
         if self.idx + 1 >= len(self.level.steps):
             self.stars = 3 if self.mistakes == 0 else 2 if self.mistakes <= 2 else 1
             self.finished = True
@@ -142,11 +166,11 @@ class LessonSession:
     # ---------- 走子 ----------
     def submit_move(self, uci: str) -> dict:
         if self.finished or self.board is None:
-            raise IllegalMove('当前步骤不能走子')
+            raise IllegalMove('cannot_move')
         if self.step.type == 'play':
             return self._play_move(uci)
         if self.step.type not in PUZZLE_TYPES or self.solved:
-            raise IllegalMove('当前步骤不能走子')
+            raise IllegalMove('cannot_move')
         self.reply = None
         self._display_fen = None
         move = parse_move(self.board, uci)
@@ -165,7 +189,7 @@ class LessonSession:
             self.solved = True
             self.last_move = [move.uci()[:2], move.uci()[2:4]]
             self.last_result = 'correct'
-            self.success_text = self.step.successText
+            self.success_text = loc_text(self.step.successText, self.lang)
         else:
             self.board.pop()
             self._wrong()
@@ -177,7 +201,7 @@ class LessonSession:
             self.solved = True
             self.last_move = [bare[:2], bare[2:]]
             self.last_result = 'correct'
-            self.success_text = self.step.successText
+            self.success_text = loc_text(self.step.successText, self.lang)
         else:
             self._wrong()
 
@@ -199,8 +223,8 @@ class LessonSession:
             self.fast_mate = mated and not is_last
             self.solved = True
             self.last_result = 'correct'
-            self.success_text = ('更快将死!比参考答案还少用了步数,太厉害了!'
-                                 if self.fast_mate else step.successText)
+            self.success_text = (FAST_MATE_TEXT[self.lang]
+                                 if self.fast_mate else loc_text(step.successText, self.lang))
             return
         # 自动走出对手的应对
         user_fen = self.board.fen()
@@ -217,11 +241,11 @@ class LessonSession:
     # ---------- 选择题 ----------
     def submit_choice(self, index: int) -> dict:
         if self.step.type != 'choice' or self.solved:
-            raise IllegalMove('当前步骤不能作答')
+            raise IllegalMove('cannot_answer')
         if index == self.step.answer:
             self.solved = True
             self.last_result = 'correct'
-            self.success_text = self.step.explain
+            self.success_text = loc_text(self.step.explain, self.lang)
         else:
             self._wrong()
         return self.state()
@@ -239,7 +263,7 @@ class LessonSession:
     def _play_move(self, uci: str) -> dict:
         step = self.step
         if self.play_status != 'playing':
-            raise IllegalMove('本局已结束,请点击"再来一盘"')
+            raise IllegalMove('game_over')
         self.reply = None
         self._display_fen = None
         move = parse_move(self.board, uci)
@@ -250,18 +274,18 @@ class LessonSession:
         if self.board.is_checkmate():
             self.play_status = 'won'
             self.solved = True
-            self.success_text = f'{step.successText}(用了 {self.my_moves} 步)'
+            self.success_text = PLAY_WIN_TEMPLATE[self.lang].format(text=loc_text(step.successText, self.lang), n=self.my_moves)
             self.last_result = 'correct'
             return self.state()
         if step.win == 'mateOrQueen' and black_queen_gone(self.board):
             self.play_status = 'won'
             self.solved = True
-            self.success_text = f'{step.successText}(用了 {self.my_moves} 步)'
+            self.success_text = PLAY_WIN_TEMPLATE[self.lang].format(text=loc_text(step.successText, self.lang), n=self.my_moves)
             self.last_result = 'correct'
             return self.state()
         if is_draw(self.board):
             self.play_status = 'draw'
-            self.end_text = step.drawText
+            self.end_text = loc_text(step.drawText, self.lang)
             return self.state()
 
         # 电脑应对(同步返回,前端延迟动画展示)
@@ -273,19 +297,19 @@ class LessonSession:
             self.reply = {'move': [bm.uci()[:2], bm.uci()[2:4]], 'fen': self.board.fen()}
             if self.board.is_checkmate():
                 self.play_status = 'lost'
-                self.end_text = step.failText
+                self.end_text = loc_text(step.failText, self.lang)
             elif is_draw(self.board):
                 self.play_status = 'draw'
-                self.end_text = step.drawText
+                self.end_text = loc_text(step.drawText, self.lang)
         return self.state()
 
     def restart_play(self, bot_style: Optional[str] = None) -> dict:
         step = self.step
         if step.type != 'play':
-            raise IllegalMove('当前不是对弈步骤')
+            raise IllegalMove('not_play')
         if bot_style is not None:
             if bot_style not in BOT_STYLES:
-                raise IllegalMove(f'未知对手档位:{bot_style}')
+                raise IllegalMove('unknown_bot')
             self.bot_style = bot_style
         # 尚未走子的换档/重开不算失误;对局中途重开算一次小失误(影响星级)
         fresh = self.play_status == 'playing' and self.my_moves == 0

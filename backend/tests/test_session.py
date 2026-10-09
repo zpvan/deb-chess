@@ -104,7 +104,7 @@ def test_line_step_fast_mate(curriculum_factory):
     st = s.submit_move('a1a8')
     assert st['solved'] is True
     assert st['fast_mate'] is True
-    assert '更快将死' in st['success_text']
+    assert 'faster mate' in st['success_text'].lower()
 
 
 def test_choice_step(curriculum_factory):

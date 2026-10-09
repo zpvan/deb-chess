@@ -8,11 +8,40 @@ from pydantic import BaseModel, Field
 # 课程数据为 Python 模块(backend/data/curriculum.py,暴露 CHAPTERS: list[dict])
 DEFAULT_DATA = Path(__file__).resolve().parents[1] / 'data' / 'curriculum.py'
 
+Lang = Literal['en', 'zh']
+
+
+class Bilingual(BaseModel):
+    """用户可见文本:中英双语。"""
+    zh: str
+    en: str
+
+
+def loc_text(field: Bilingual, lang: str) -> str:
+    if lang == 'zh':
+        return field.zh
+    return field.en
+
+
+def _flatten(value, lang: str):
+    """递归扁平化:模型/字典/列表中的 Bilingual 全部解析为 lang 字符串。"""
+    if isinstance(value, Bilingual):
+        return loc_text(value, lang)
+    if isinstance(value, BaseModel):
+        return _flatten(value.model_dump(), lang)
+    if isinstance(value, dict):
+        if set(value.keys()) == {'zh', 'en'}:
+            return value.get(lang, value.get('en', value.get('zh', '')))
+        return {k: _flatten(v, lang) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_flatten(v, lang) for v in value]
+    return value
+
 
 class TeachStep(BaseModel):
     type: Literal['teach']
-    title: str
-    text: list[str]
+    title: Bilingual
+    text: list[Bilingual]
     fen: Optional[str] = None
     highlight: Optional[list[str]] = None
     arrows: Optional[list[tuple[str, str]]] = None
@@ -21,19 +50,19 @@ class TeachStep(BaseModel):
 class MateStep(BaseModel):
     type: Literal['mate']
     fen: str
-    prompt: str
-    hint: Optional[str] = None
-    successText: str
+    prompt: Bilingual
+    hint: Optional[Bilingual] = None
+    successText: Bilingual
     orientation: Optional[Literal['white', 'black']] = None
 
 
 class MoveStep(BaseModel):
     type: Literal['move']
     fen: str
-    prompt: str
+    prompt: Bilingual
     accepted: list[str]
-    hint: Optional[str] = None
-    successText: str
+    hint: Optional[Bilingual] = None
+    successText: Bilingual
     orientation: Optional[Literal['white', 'black']] = None
 
 
@@ -42,19 +71,19 @@ class LineStep(BaseModel):
     fen: str
     script: list[str]
     endsWithMate: bool = True
-    prompts: list[str]
-    hint: Optional[str] = None
-    successText: str
+    prompts: list[Bilingual]
+    hint: Optional[Bilingual] = None
+    successText: Bilingual
 
 
 class ChoiceStep(BaseModel):
     type: Literal['choice']
     fen: str
-    sideLabel: str
-    question: str
-    options: list[str]
+    sideLabel: Bilingual
+    question: Bilingual
+    options: list[Bilingual]
     answer: int
-    explain: str
+    explain: Bilingual
     orientation: Optional[Literal['white', 'black']] = None
 
 
@@ -63,11 +92,11 @@ class PlayStep(BaseModel):
     fen: str
     bot: Literal['random', 'greedy', 'smart']
     win: Literal['mate', 'mateOrQueen']
-    prompt: str
-    hint: Optional[str] = None
-    successText: str
-    failText: str
-    drawText: str
+    prompt: Bilingual
+    hint: Optional[Bilingual] = None
+    successText: Bilingual
+    failText: Bilingual
+    drawText: Bilingual
 
 
 Step = Annotated[
@@ -78,17 +107,17 @@ Step = Annotated[
 
 class Level(BaseModel):
     id: str
-    title: str
-    goal: str
-    skill: str
+    title: Bilingual
+    goal: Bilingual
+    skill: Bilingual
     steps: list[Step]
 
 
 class Chapter(BaseModel):
     id: str
-    badge: str
-    title: str
-    intro: str
+    badge: Bilingual
+    title: Bilingual
+    intro: Bilingual
     color: str
     soft: str
     levels: list[Level]
@@ -119,12 +148,13 @@ class Curriculum(BaseModel):
 ANSWER_FIELDS = {'accepted', 'script', 'answer', 'explain', 'successText', 'failText', 'drawText'}
 
 
-def public_step(step: Step) -> dict:
-    return {
+def public_step(step: Step, lang: str = 'en') -> dict:
+    raw = {
         k: v
-        for k, v in step.model_dump(mode='json').items()
+        for k, v in step.model_dump(mode='python').items()
         if k not in ANSWER_FIELDS and v is not None
     }
+    return _flatten(raw, lang)
 
 
 def load_chapters(path: Union[str, Path, None] = None) -> list[dict]:
