@@ -53,3 +53,6 @@ __pycache__/
 
 # 后端运行时数据
 backend/data/progress.db
+
+# 生成物
+src/lib/pybundle.ts

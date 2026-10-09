@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
-import { api, type ChapterData, type LevelData } from '@/lib/api'
+import type { ChapterData, LevelData } from '@/lib/api'
+import { backend as api } from '@/lib/backend'
 import { useLang } from '@/i18n'
 
 export interface FlatLevel {
