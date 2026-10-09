@@ -202,7 +202,7 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
             ))}
           </div>
           <p className="text-sm text-on-surface-variant mb-6">
-            {st.mistakes === 0 ? '完美通关,一次都没错!菲舍尔也会为你鼓掌。' : `错了 ${st.mistakes} 次,复习一下还能拿更多星星哦!`}
+            {st.mistakes === 0 ? '完美通关,一次都没错!太厉害了!' : `错了 ${st.mistakes} 次,复习一下还能拿更多星星哦!`}
           </p>
           <div className="flex flex-col gap-3">
             {onNext && (

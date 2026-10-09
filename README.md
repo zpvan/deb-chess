@@ -1,13 +1,12 @@
-# deb-chess — Fischer Chess Training Camp
+# deb-chess — Chess Training Camp
 
 [中文版](README_ZH.md)
 
 [![CI](https://github.com/zpvan/deb-chess/actions/workflows/ci.yml/badge.svg)](https://github.com/zpvan/deb-chess/actions/workflows/ci.yml)
 
-A chess-learning web app for kids, inspired by the teaching method of
-*Bobby Fischer Teaches Chess*: look at the position, think for yourself,
-check the answer — drill mate patterns until they become intuition.
-(UI text is in Chinese.)
+A chess-learning web app for kids: look at the position, think for
+yourself, check the answer — drill mate patterns until they become
+intuition. (UI text is in Chinese.)
 
 ## Architecture
 
@@ -60,14 +59,10 @@ answer move in the curriculum data.
 - Book page scans are **not** included (see `data/README.md`); the app
   does not need them.
 
-## License & Copyright
+## License
 
-- Code: **GPL-3.0** (see [LICENSE](LICENSE)), consistent with the GPL-3.0
-  dependencies python-chess and Stockfish.
-- *Bobby Fischer Teaches Chess* (book content and page images) is
-  copyrighted by its publisher. This repository contains and distributes
-  no book pages. Lesson text is original Chinese writing; the puzzles are
-  classic checkmate patterns.
+Code: **GPL-3.0** (see [LICENSE](LICENSE)), consistent with the GPL-3.0
+dependencies python-chess and Stockfish.
 
 ## Contributing
 

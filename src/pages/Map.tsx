@@ -85,7 +85,7 @@ export default function MapPage({ onOpen, onHome }: Props) {
         ))}
 
         <p className="text-center text-sm text-on-surface-variant mt-4">
-          跟着菲舍尔的方法:先把终局的“杀王”练熟,再学中局战术,最后学开局。循序渐进,每关都能拿星星!
+          先把终局的“杀王”练熟,再学中局战术,最后学开局。循序渐进,每关都能拿星星!
         </p>
       </div>
     </div>

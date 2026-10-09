@@ -34,7 +34,7 @@ export default function Home({ onStart }: Props) {
       <section className="max-w-5xl mx-auto px-4 pt-10 pb-14 grid md:grid-cols-2 gap-10 items-center">
         <div>
           <div className="inline-block px-4 py-1.5 rounded-full bg-primary-container text-on-primary-container text-sm font-bold mb-5">
-            世界冠军鲍比·菲舍尔的学棋方法
+            世界冠军的学棋方法
           </div>
           <h1 className="font-display text-4xl sm:text-5xl leading-tight mb-5">
             从<span className="text-primary">终局</span>开始,
@@ -43,13 +43,13 @@ export default function Home({ onStart }: Props) {
           </h1>
           <p className="text-lg text-on-surface-variant leading-relaxed mb-8">
             专为一年级小棋士设计:先看图想一想,再动手走棋,答对就能赢星星。
-            跟着菲舍尔的练习法,从最简单的“底线杀”练起,直到学会完整的开局!
+            从最简单的“底线杀”练起,直到学会完整的开局!
           </p>
           <div className="flex flex-wrap gap-4">
             <button onClick={onStart}
               className="state-layer px-8 py-4 rounded-full bg-primary text-on-primary font-display text-xl flex items-center gap-2 transition elev-2 hover:-translate-y-0.5">
               <Play size={22} className="fill-current" />
-              {nextLevel && nextLevel.index > 0 ? `继续闯关(第 ${nextLevel.index + 1} 关)` : '开始闯关'}
+              {nextLevel && nextLevel.index > 0 ? '继续闯关' : '开始闯关'}
             </button>
           </div>
           <div className="mt-6 flex items-center gap-4 text-sm text-on-surface-variant">
@@ -66,7 +66,7 @@ export default function Home({ onStart }: Props) {
             highlight={['f7', 'g7', 'h7']}
           />
           <p className="text-center text-sm text-on-surface-variant mt-3 font-bold">
-            菲舍尔最著名的“底线杀”:车冲 a8,黑王被自己的小兵困住!
+            经典的“底线杀”:车冲 a8,黑王被自己的小兵困住!
           </p>
         </div>
       </section>
@@ -75,7 +75,7 @@ export default function Home({ onStart }: Props) {
       <section className="max-w-5xl mx-auto px-4 pb-16">
         <h2 className="font-display text-3xl mb-2 text-center">为什么是“倒着学”?</h2>
         <p className="text-center text-on-surface-variant mb-10 max-w-xl mx-auto">
-          菲舍尔在《Bobby Fischer Teaches Chess》里说:先学杀王,棋越下越有目标。本站按这个思路设计了三段旅程。
+          先学杀王,棋越下越有目标。本站按这个思路设计了三段旅程。
         </p>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {[
@@ -115,19 +115,19 @@ export default function Home({ onStart }: Props) {
         </div>
       </section>
 
-      {/* 菲舍尔方法 */}
+      {/* 练习方法 */}
       <section className="bg-primary-container text-on-primary-container py-14">
         <div className="max-w-5xl mx-auto px-4 grid md:grid-cols-[auto_1fr] gap-8 items-center">
           <div className="text-7xl text-center" style={{ fontFamily: '"Segoe UI Symbol","Noto Sans Symbols 2",sans-serif' }}>♚</div>
           <div>
             <div className="flex items-center gap-2 mb-3 font-bold">
-              <BookOpen size={18} /> 菲舍尔练习法
+              <BookOpen size={18} /> 程序化练习法
             </div>
             <blockquote className="text-lg leading-relaxed">
               “这本书会教你更快地分析棋题,找到要记住的关键模式。
               只要从头开始一题一题做下去,几秒钟之内你就能认出杀棋。”
             </blockquote>
-            <p className="mt-3 opacity-75">—— 鲍比·菲舍尔,14 岁成为美国冠军,后来的世界冠军</p>
+            <p className="mt-3 opacity-75">—— 世界冠军的练棋秘诀:反复识别杀王模式,直到形成直觉</p>
           </div>
         </div>
       </section>

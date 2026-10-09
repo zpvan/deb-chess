@@ -1,11 +1,11 @@
-# deb-chess — 菲舍尔国际象棋练级营
+# deb-chess — 国际象棋练级营
 
 [English README](README.md)
 
 [![CI](https://github.com/zpvan/deb-chess/actions/workflows/ci.yml/badge.svg)](https://github.com/zpvan/deb-chess/actions/workflows/ci.yml)
 
-面向儿童的国际象棋教学应用,课程方法源自《鲍比·菲舍尔教你下国际象棋》:
-看局面、自己想、对答案,反复识别杀王模式形成直觉。
+面向儿童的国际象棋教学应用:看局面、自己想、对答案,
+反复识别杀王模式形成直觉。
 
 ## 架构
 
@@ -52,12 +52,10 @@ cd backend && ../.venv/bin/pytest tests/ -v
 
 - 书页扫描件不包含在本仓库(见 `data/README.md`),应用运行不依赖它们。
 
-## 许可证与版权
+## 许可证
 
-- 代码:**GPL-3.0**(见 [LICENSE](LICENSE)),与 GPL-3.0 依赖
-  python-chess、Stockfish 保持一致。
-- 《Bobby Fischer Teaches Chess》书籍内容与书页图像版权归原出版方所有。
-  本仓库不包含、不分发书页;课程文字为原创中文编写,棋题为经典杀王模式。
+代码:**GPL-3.0**(见 [LICENSE](LICENSE)),与 GPL-3.0 依赖
+python-chess、Stockfish 保持一致。
 
 ## 参与贡献
 
