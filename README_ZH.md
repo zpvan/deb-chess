@@ -13,6 +13,12 @@
   bot、进度存储(SQLite)。
 - **前端(React 19 + Vite)**:纯展示层,所有棋局逻辑通过 `/api` 调用后端。
 
+## 在线玩
+
+<https://zpvan.github.io/deb-chess/> —— 完全在浏览器里运行
+(Python 后端核心经 Pyodide/WebAssembly 运行;进度存在浏览器 localStorage;
+在线版暂不含 Stockfish 大师档)。
+
 ## 快速开始
 
 ```bash

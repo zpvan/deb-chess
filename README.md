@@ -15,6 +15,12 @@ intuition. (UI text is in Chinese.)
 - **Frontend (React 19 + Vite)** — thin presentation layer; all game
   logic goes through the `/api` REST endpoints
 
+## Play Online
+
+<https://zpvan.github.io/deb-chess/> — runs entirely in your browser
+(Python backend core via Pyodide/WebAssembly; progress saved in
+localStorage; the Stockfish master tier is not available in this version).
+
 ## Quick Start
 
 ```bash
