@@ -3,17 +3,19 @@ import { Routes, Route } from 'react-router'
 import Home from './pages/Home'
 import MapPage from './pages/Map'
 import Lesson from './pages/Lesson'
+import { LanguageProvider, useLang } from './i18n'
 import { ProgressProvider } from './state/progress'
 import { CurriculumProvider, useCurriculum } from './state/curriculum'
 
 type Page = { name: 'home' } | { name: 'map' } | { name: 'lesson'; levelId: string }
 
 function Shell() {
+  const { t } = useLang()
   const [page, setPage] = useState<Page>({ name: 'home' })
   const { flatLevels, loading } = useCurriculum()
 
   if (loading) {
-    return <div className="min-h-screen bg-[#fff8ea] flex items-center justify-center font-display text-2xl">加载中……</div>
+    return <div className="min-h-screen bg-surface text-on-surface flex items-center justify-center font-display text-2xl">{t('app.loading')}</div>
   }
 
   // 所有页面都在 / 下渲染,站内用状态切换,保证静态预览可用
@@ -37,13 +39,15 @@ function Shell() {
 
 export default function App() {
   return (
-    <CurriculumProvider>
-      <ProgressProvider>
-        <Routes>
-          <Route path="/" element={<Shell />} />
-          <Route path="*" element={<Shell />} />
-        </Routes>
-      </ProgressProvider>
-    </CurriculumProvider>
+    <LanguageProvider>
+      <CurriculumProvider>
+        <ProgressProvider>
+          <Routes>
+            <Route path="/" element={<Shell />} />
+            <Route path="*" element={<Shell />} />
+          </Routes>
+        </ProgressProvider>
+      </CurriculumProvider>
+    </LanguageProvider>
   )
 }
