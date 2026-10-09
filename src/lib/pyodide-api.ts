@@ -15,6 +15,7 @@ declare global {
 
 interface PyodideInstance {
   runPython(code: string): unknown
+  runPythonAsync(code: string): Promise<unknown>
   FS: { writeFile(path: string, data: string): void; mkdirTree(path: string): void }
   loadPackage(names: string[]): Promise<void>
   pyimport(name: string): PyProxy
@@ -42,7 +43,8 @@ async function init(): Promise<PyProxy> {
     await loadScript(PYODIDE_URL)
     const pyodide = await window.loadPyodide!({ indexURL: PYODIDE_INDEX })
     await pyodide.loadPackage(['micropip'])
-    await pyodide.runPython(`
+    // micropip.install 是异步的,必须用 runPythonAsync 支持顶层 await
+    await pyodide.runPythonAsync(`
 import micropip
 await micropip.install(['python-chess', 'pydantic'])
 `)
@@ -61,6 +63,7 @@ await micropip.install(['python-chess', 'pydantic'])
     } catch { /* ignore */ }
     return facade
   })()
+  facadePromise.catch((e) => console.error('[pyodide-api] init failed:', e))
   return facadePromise
 }
 

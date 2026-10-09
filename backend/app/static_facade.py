@@ -7,7 +7,7 @@ import json
 
 from app.core.session import ERRORS, IllegalMove, LessonSession
 from app.core.store import SessionStore
-from app.db import rank_for, xp_gain
+from app.progress_rules import rank_for, xp_gain
 from app.models import load_curriculum, loc_text, public_step
 
 _curriculum = None
