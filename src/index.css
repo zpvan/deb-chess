@@ -9,11 +9,11 @@
     --on-primary: #ffffff;
     --primary-container: #d3e3fd;
     --on-primary-container: #041e49;
-    --surface: #f9f9ff;
-    --surface-container: #ededf4;
+    --surface: #f5f1e6;
+    --surface-container: #ece5d4;
     --on-surface: #191c20;
     --on-surface-variant: #44474e;
-    --outline-variant: #c4c6d0;
+    --outline-variant: #cfc5ac;
     --success-container: #c2e8ce;
     --on-success-container: #0e3a1f;
     --error-container: #f9dedc;
@@ -21,9 +21,9 @@
     --star: #f9ab00;
     --hint-container: #fff3cd;
     --on-hint-container: #574500;
-    --board-light: #e8eef9;
+    --board-light: #efe8d4;
     --board-dark: #769cdf;
-    --board-last-light: #b3ccf5;
+    --board-last-light: #e0d0a8;
     --board-last-dark: #5b84cc;
     --board-select: #a8c7fa;
     --board-check: #ea4335;
