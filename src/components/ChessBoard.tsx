@@ -76,7 +76,7 @@ export default function ChessBoard({
       className={`relative select-none ${shake ? 'animate-[boardshake_0.4s_ease-in-out]' : ''}`}
       style={{ containerType: 'inline-size' }}
     >
-      <div className="grid w-full aspect-square rounded-2xl overflow-hidden shadow-[0_18px_40px_-18px_rgba(80,50,10,0.45)] ring-4 ring-[#7a5a33]"
+      <div className="grid w-full aspect-square rounded-2xl overflow-hidden shadow-[0_18px_40px_-18px_rgba(0,0,0,0.4)] ring-4 ring-[var(--outline-variant)]"
         style={{ gridTemplateColumns: 'repeat(8, 1fr)', gridTemplateRows: 'repeat(8, 1fr)' }}>
         {ranks.map((r) =>
           files.map((f) => {
@@ -95,25 +95,25 @@ export default function ChessBoard({
                 className="relative flex items-center justify-center p-0 border-0 min-w-0 min-h-0 overflow-hidden"
                 style={{
                   backgroundColor: isCheck
-                    ? '#e05252'
+                    ? 'var(--board-check)'
                     : isSel
-                      ? '#f7d354'
+                      ? 'var(--board-select)'
                       : isHi
-                        ? '#b9d97a'
+                        ? 'var(--primary-container)'
                         : isLast
                           ? dark
-                            ? '#d4b26a'
-                            : '#f0dcaa'
+                            ? 'var(--board-last-dark)'
+                            : 'var(--board-last-light)'
                           : dark
-                            ? '#b07848'
-                            : '#f3e3c3',
+                            ? 'var(--board-dark)'
+                            : 'var(--board-light)',
                 }}
               >
                 {isTarget && !piece && (
-                  <span className="absolute w-[26%] h-[26%] rounded-full bg-[#2e7d52]/60" />
+                  <span className="absolute w-[26%] h-[26%] rounded-full bg-primary/60" />
                 )}
                 {isTarget && piece && (
-                  <span className="absolute inset-[6%] rounded-full ring-4 ring-[#e05252]/80" />
+                  <span className="absolute inset-[6%] rounded-full ring-4 ring-[var(--board-check)]/80" />
                 )}
                 {piece && (
                   <span
@@ -133,12 +133,12 @@ export default function ChessBoard({
                   </span>
                 )}
                 {f === (orientation === 'white' ? 0 : 7) && (
-                  <span className={`absolute left-[4%] top-[2%] text-[10px] font-bold ${dark ? 'text-[#f3e3c3]' : 'text-[#b07848]'}`}>
+                  <span className={`absolute left-[4%] top-[2%] text-[10px] font-bold ${dark ? 'text-[var(--board-light)]' : 'text-[var(--board-dark)]'}`}>
                     {8 - r}
                   </span>
                 )}
                 {r === (orientation === 'white' ? 7 : 0) && (
-                  <span className={`absolute right-[5%] bottom-[2%] text-[10px] font-bold ${dark ? 'text-[#f3e3c3]' : 'text-[#b07848]'}`}>
+                  <span className={`absolute right-[5%] bottom-[2%] text-[10px] font-bold ${dark ? 'text-[var(--board-light)]' : 'text-[var(--board-dark)]'}`}>
                     {FILES[f]}
                   </span>
                 )}
@@ -152,7 +152,7 @@ export default function ChessBoard({
         <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full pointer-events-none">
           <defs>
             <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-              <path d="M0,0 L10,5 L0,10 z" fill="#2e7d52" />
+              <path d="M0,0 L10,5 L0,10 z" fill="var(--primary)" />
             </marker>
           </defs>
           {arrows.map(([from, to], i) => {
@@ -166,7 +166,7 @@ export default function ChessBoard({
             const ex = b.x - (dx / len) * 5
             const ey = b.y - (dy / len) * 5
             return (
-              <line key={i} x1={sx} y1={sy} x2={ex} y2={ey} stroke="#2e7d52" strokeWidth="2.6"
+              <line key={i} x1={sx} y1={sy} x2={ex} y2={ey} stroke="var(--primary)" strokeWidth="2.6"
                 strokeLinecap="round" markerEnd="url(#arr)" opacity="0.9" />
             )
           })}
