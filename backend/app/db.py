@@ -15,6 +15,19 @@ RANKS = [
 ]
 
 
+def rank_for(xp: int, lang: str = 'en') -> dict:
+    """按 XP 计算段位。rank_name 按 lang 返回中/英文。"""
+    rank = next((r for r in reversed(RANKS) if xp >= r[0]), RANKS[0])
+    return {'rank_name': rank[2] if lang == 'en' else rank[1], 'rank_icon': rank[3]}
+
+
+def xp_gain(prev_stars: int, stars: int) -> tuple[int, int]:
+    """返回 (新的最佳星级, 本次获得的 XP)。规则:首通 60+stars*20;刷新纪录补差。"""
+    best = max(prev_stars, stars)
+    gained = 60 + stars * 20 if prev_stars == 0 else max(0, (best - prev_stars) * 20)
+    return best, gained
+
+
 class ProgressDB:
     def __init__(self, path: Union[str, Path]):
         path = str(path)
@@ -31,20 +44,17 @@ class ProgressDB:
         levels = {r[0]: r[1] for r in self._conn.execute('SELECT level_id, stars FROM levels')}
         row = self._conn.execute("SELECT value FROM meta WHERE key='xp'").fetchone()
         xp = row[0] if row else 0
-        rank = next((r for r in reversed(RANKS) if xp >= r[0]), RANKS[0])
         return {
             'levels': levels,
             'xp': xp,
             'total_stars': sum(levels.values()),
-            'rank_name': rank[2] if lang == 'en' else rank[1],
-            'rank_icon': rank[3],
+            **rank_for(xp, lang),
         }
 
     def complete_level(self, level_id: str, stars: int, lang: str = 'en') -> dict:
         row = self._conn.execute('SELECT stars FROM levels WHERE level_id=?', (level_id,)).fetchone()
         prev = row[0] if row else 0
-        best = max(prev, stars)
-        gained = 60 + stars * 20 if prev == 0 else max(0, (best - prev) * 20)
+        best, gained = xp_gain(prev, stars)
         self._conn.execute(
             'INSERT INTO levels (level_id, stars) VALUES (?, ?) '
             'ON CONFLICT(level_id) DO UPDATE SET stars=excluded.stars',
