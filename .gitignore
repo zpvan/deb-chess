@@ -56,3 +56,6 @@ backend/data/progress.db
 
 # 生成物
 src/lib/pybundle.ts
+
+# superpowers 工作文档(本地流程产物,不入库)
+docs/superpowers/
