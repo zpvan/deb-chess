@@ -6,12 +6,12 @@ from pathlib import Path
 from typing import Union
 
 RANKS = [
-    (0, '小士兵', '♟'),
-    (100, '小骑士', '♞'),
-    (250, '小主教', '♝'),
-    (450, '小城堡', '♜'),
-    (700, '小皇后', '♛'),
-    (1000, '小棋王', '♚'),
+    (0, '小士兵', 'Pawn Rookie', '♟'),
+    (100, '小骑士', 'Knight Rookie', '♞'),
+    (250, '小主教', 'Bishop Rookie', '♝'),
+    (450, '小城堡', 'Rook Rookie', '♜'),
+    (700, '小皇后', 'Queen Rookie', '♛'),
+    (1000, '小棋王', 'King Rookie', '♚'),
 ]
 
 
@@ -27,7 +27,7 @@ class ProgressDB:
             'CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value INTEGER NOT NULL)')
         self._conn.commit()
 
-    def get(self) -> dict:
+    def get(self, lang: str = 'en') -> dict:
         levels = {r[0]: r[1] for r in self._conn.execute('SELECT level_id, stars FROM levels')}
         row = self._conn.execute("SELECT value FROM meta WHERE key='xp'").fetchone()
         xp = row[0] if row else 0
@@ -36,11 +36,11 @@ class ProgressDB:
             'levels': levels,
             'xp': xp,
             'total_stars': sum(levels.values()),
-            'rank_name': rank[1],
-            'rank_icon': rank[2],
+            'rank_name': rank[2] if lang == 'en' else rank[1],
+            'rank_icon': rank[3],
         }
 
-    def complete_level(self, level_id: str, stars: int) -> dict:
+    def complete_level(self, level_id: str, stars: int, lang: str = 'en') -> dict:
         row = self._conn.execute('SELECT stars FROM levels WHERE level_id=?', (level_id,)).fetchone()
         prev = row[0] if row else 0
         best = max(prev, stars)
@@ -54,7 +54,7 @@ class ProgressDB:
             'ON CONFLICT(key) DO UPDATE SET value = value + excluded.value',
             (gained,))
         self._conn.commit()
-        return self.get()
+        return self.get(lang)
 
     def close(self) -> None:
         self._conn.close()

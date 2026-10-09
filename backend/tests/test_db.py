@@ -4,7 +4,8 @@ from app.db import ProgressDB
 def test_empty_progress(tmp_path):
     db = ProgressDB(tmp_path / 'p.db')
     p = db.get()
-    assert p == {'levels': {}, 'xp': 0, 'total_stars': 0, 'rank_name': '小士兵', 'rank_icon': '♟'}
+    assert p == {'levels': {}, 'xp': 0, 'total_stars': 0, 'rank_name': 'Pawn Rookie', 'rank_icon': '♟'}
+    assert db.get(lang='zh')['rank_name'] == '小士兵'
     db.close()
 
 
@@ -13,7 +14,8 @@ def test_complete_level_first_time(tmp_path):
     p = db.complete_level('w1', 2)
     assert p['levels'] == {'w1': 2}
     assert p['xp'] == 60 + 2 * 20  # 首通 60 + stars*20
-    assert p['rank_name'] == '小骑士'  # xp >= 100
+    assert p['rank_name'] == 'Knight Rookie'  # xp >= 100
+    assert db.get(lang='zh')['rank_name'] == '小骑士'
     db.close()
 
 

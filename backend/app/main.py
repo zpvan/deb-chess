@@ -2,15 +2,17 @@ import os
 from pathlib import Path
 from typing import Optional, Union
 
-from fastapi import FastAPI, HTTPException
+from typing import Literal
+
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from app.core.session import BOT_STYLES, IllegalMove, LessonSession
+from app.core.session import BOT_STYLES, ERRORS, IllegalMove, LessonSession
 from app.core.store import SessionStore
 from app.db import ProgressDB
 from app.engine.stockfish_bot import StockfishBot
-from app.models import load_curriculum, public_step
+from app.models import load_curriculum, loc_text, public_step
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 REPO_ROOT = BACKEND_DIR.parent
@@ -20,6 +22,7 @@ DEFAULT_DB = BACKEND_DIR / 'data' / 'progress.db'
 
 class NewSession(BaseModel):
     level_id: str
+    lang: Literal['en', 'zh'] = 'en'
 
 
 class MoveIn(BaseModel):
@@ -59,17 +62,29 @@ def create_app(curriculum_path: Union[str, Path] = DEFAULT_CURRICULUM,
         return {'ok': True}
 
     @app.get('/api/curriculum')
-    def get_curriculum():
+    def get_curriculum(lang: Literal['en', 'zh'] = Query('en')):
+        chapters = []
+        for ch in curriculum.chapters:
+            levels = []
+            for lv in ch.levels:
+                levels.append({
+                    'id': lv.id,
+                    'title': loc_text(lv.title, lang),
+                    'goal': loc_text(lv.goal, lang),
+                    'skill': loc_text(lv.skill, lang),
+                    'steps': [public_step(st, lang) for st in lv.steps],
+                })
+            chapters.append({
+                'id': ch.id,
+                'badge': loc_text(ch.badge, lang),
+                'title': loc_text(ch.title, lang),
+                'intro': loc_text(ch.intro, lang),
+                'color': ch.color,
+                'soft': ch.soft,
+                'levels': levels,
+            })
         return {
-            'chapters': [
-                {**ch.model_dump(mode='json', exclude={'levels'}),
-                 'levels': [
-                     {**lv.model_dump(mode='json', exclude={'steps'}),
-                      'steps': [public_step(st) for st in lv.steps]}
-                     for lv in ch.levels
-                 ]}
-                for ch in curriculum.chapters
-            ],
+            'chapters': chapters,
             'total_levels': len(curriculum.flat_levels()),
             'total_puzzles': curriculum.total_puzzles,
             'stockfish_available': stockfish.available(),
@@ -77,13 +92,13 @@ def create_app(curriculum_path: Union[str, Path] = DEFAULT_CURRICULUM,
         }
 
     @app.get('/api/progress')
-    def get_progress():
-        return db.get()
+    def get_progress(lang: Literal['en', 'zh'] = Query('en')):
+        return db.get(lang)
 
     @app.post('/api/sessions', status_code=201)
     def new_session(body: NewSession):
         try:
-            s = LessonSession(curriculum, body.level_id, stockfish=stockfish)
+            s = LessonSession(curriculum, body.level_id, lang=body.lang, stockfish=stockfish)
         except KeyError:
             raise HTTPException(404, f'关卡不存在:{body.level_id}')
         store.put(s)
@@ -99,7 +114,8 @@ def create_app(curriculum_path: Union[str, Path] = DEFAULT_CURRICULUM,
         try:
             state = s.submit_move(body.move)
         except IllegalMove as e:
-            raise HTTPException(422, str(e))
+            msg = ERRORS[e.code]
+            raise HTTPException(422, {'code': e.code, 'zh': msg['zh'], 'en': msg['en']})
         maybe_record(s)
         return state
 
@@ -109,7 +125,8 @@ def create_app(curriculum_path: Union[str, Path] = DEFAULT_CURRICULUM,
         try:
             state = s.submit_choice(body.index)
         except IllegalMove as e:
-            raise HTTPException(422, str(e))
+            msg = ERRORS[e.code]
+            raise HTTPException(422, {'code': e.code, 'zh': msg['zh'], 'en': msg['en']})
         maybe_record(s)
         return state
 
@@ -119,7 +136,8 @@ def create_app(curriculum_path: Union[str, Path] = DEFAULT_CURRICULUM,
         try:
             state = s.advance()
         except IllegalMove as e:
-            raise HTTPException(422, str(e))
+            msg = ERRORS[e.code]
+            raise HTTPException(422, {'code': e.code, 'zh': msg['zh'], 'en': msg['en']})
         maybe_record(s)
         return state
 
@@ -129,7 +147,8 @@ def create_app(curriculum_path: Union[str, Path] = DEFAULT_CURRICULUM,
         try:
             return s.restart_play(bot_style=body.bot)
         except IllegalMove as e:
-            raise HTTPException(422, str(e))
+            msg = ERRORS[e.code]
+            raise HTTPException(422, {'code': e.code, 'zh': msg['zh'], 'en': msg['en']})
 
     dist = Path(dist_dir or os.environ.get('DIST_DIR', str(REPO_ROOT / 'dist')))
     if dist.is_dir():
