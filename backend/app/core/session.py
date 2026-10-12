@@ -171,12 +171,24 @@ class LessonSession:
         step = self.step
         if step.type in PUZZLE_TYPES + ('choice', 'play') and not self.solved:
             raise IllegalMove('finish_step')
-        if self.idx + 1 >= len(self.level.steps):
+        # 往后找第一个未解出的步骤(已解出的跳过;teach 永不在 solved_steps,会正常停住)
+        j = self.idx + 1
+        while j < len(self.level.steps) and j in self.solved_steps:
+            j += 1
+        if j < len(self.level.steps):
+            self.idx = j
+            self._reset_step_state()
+            return self.state()
+        # 已到末尾:所有可解步骤都解出过才算通关
+        unsolved = [i for i, st in enumerate(self.level.steps)
+                    if st.type in PUZZLE_TYPES + ('choice', 'play') and i not in self.solved_steps]
+        if not unsolved:
             self.stars = 3 if self.mistakes == 0 else 2 if self.mistakes <= 2 else 1
             self.finished = True
-        else:
-            self.idx += 1
-            self._reset_step_state()
+            return self.state()
+        # 还有没解出的题:跳到第一道
+        self.idx = unsolved[0]
+        self._reset_step_state()
         return self.state()
 
     # ---------- 走子 ----------

@@ -59,3 +59,34 @@ def test_jump_blocked_after_finished(curriculum_factory):
     with pytest.raises(IllegalMove) as e:
         s.jump_to(0)
     assert e.value.code == 'already_finished'
+
+
+def test_advance_skips_solved_and_stops_at_teach(curriculum_factory):
+    steps = [move_step(),
+             {'type': 'teach', 'title': 't', 'text': ['x']},
+             mate_step()]
+    s = mk(curriculum_factory, steps)
+    s.submit_move('a1a5')   # 解出 0
+    s.jump_to(2)
+    s.submit_move('a1a8')   # 解出 2
+    s.jump_to(0)
+    s.submit_move('a1a5')   # 重做 0
+    st = s.advance()
+    assert st['step_index'] == 1  # teach 不被跳过
+    st = s.advance()
+    assert st['finished'] is True  # 已解出的 2 被跳过,直接通关
+    assert st['stars'] == 3        # 全程零失误
+
+
+def test_advance_at_end_jumps_to_first_unsolved(curriculum_factory):
+    s = mk(curriculum_factory, [move_step(), mate_step()])
+    s.jump_to(1)
+    s.submit_move('a1a8')   # 只解出最后一步
+    st = s.advance()
+    assert st['finished'] is False
+    assert st['step_index'] == 0   # 自动跳回第一道未解题
+    assert st['solved'] is False
+    s.submit_move('a1a5')
+    st = s.advance()
+    assert st['finished'] is True
+    assert st['stars'] == 3
