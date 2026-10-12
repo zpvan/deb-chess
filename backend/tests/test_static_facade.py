@@ -81,3 +81,14 @@ def test_unknown_session_404():
 def test_unknown_level_404():
     r = unwrap(sf.create_session('nope', 'en'))
     assert r['ok'] is False and r['status'] == 404
+
+
+def test_session_jump():
+    sid = unwrap(sf.create_session('w1', 'en'))['data']['session_id']
+    st = unwrap(sf.session_jump(sid, 1))
+    assert st['ok'] is True and st['data']['step_index'] == 1
+    bad = unwrap(sf.session_jump(sid, 99))
+    assert bad['ok'] is False and bad['status'] == 422
+    assert bad['detail']['code'] == 'jump_range'
+    missing = unwrap(sf.session_jump('deadbeef', 0))
+    assert missing['ok'] is False and missing['status'] == 404

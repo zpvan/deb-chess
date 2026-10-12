@@ -37,6 +37,10 @@ class RestartIn(BaseModel):
     bot: Optional[str] = None
 
 
+class JumpIn(BaseModel):
+    step_index: int
+
+
 def create_app(curriculum_path: Union[str, Path] = DEFAULT_CURRICULUM,
                db_path: Optional[Union[str, Path]] = None,
                dist_dir: Optional[Union[str, Path]] = None) -> FastAPI:
@@ -146,6 +150,15 @@ def create_app(curriculum_path: Union[str, Path] = DEFAULT_CURRICULUM,
         s = get_session(sid)
         try:
             return s.restart_play(bot_style=body.bot)
+        except IllegalMove as e:
+            msg = ERRORS[e.code]
+            raise HTTPException(422, {'code': e.code, 'zh': msg['zh'], 'en': msg['en']})
+
+    @app.post('/api/sessions/{sid}/jump')
+    def jump(sid: str, body: JumpIn):
+        s = get_session(sid)
+        try:
+            return s.jump_to(body.step_index)
         except IllegalMove as e:
             msg = ERRORS[e.code]
             raise HTTPException(422, {'code': e.code, 'zh': msg['zh'], 'en': msg['en']})

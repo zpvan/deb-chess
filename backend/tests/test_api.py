@@ -91,3 +91,25 @@ def test_session_lang_zh(client):
 def test_progress_initially_empty(client):
     p = client.get('/api/progress').json()
     assert p['xp'] == 0 and p['levels'] == {}
+
+
+def test_jump_endpoint(client):
+    sid = client.post('/api/sessions', json={'level_id': 't1'}).json()['session_id']
+    # 越界 → 422 双语错误
+    r = client.post(f'/api/sessions/{sid}/jump', json={'step_index': 5})
+    assert r.status_code == 422
+    assert r.json()['detail']['code'] == 'jump_range'
+    # 跳到第 1 步(move 题)
+    st = client.post(f'/api/sessions/{sid}/jump', json={'step_index': 1}).json()
+    assert st['step_index'] == 1
+    assert st['solved_steps'] == []
+    # 解出后推进到末尾 → 全解出,通关
+    client.post(f'/api/sessions/{sid}/move', json={'move': 'a1a5'})
+    st = client.post(f'/api/sessions/{sid}/next').json()
+    assert st['finished'] is True
+    # 已通关不可再跳
+    r = client.post(f'/api/sessions/{sid}/jump', json={'step_index': 0})
+    assert r.status_code == 422
+    assert r.json()['detail']['code'] == 'already_finished'
+    # 会话不存在 → 404
+    assert client.post('/api/sessions/deadbeef/jump', json={'step_index': 0}).status_code == 404

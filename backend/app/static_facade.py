@@ -162,3 +162,7 @@ def session_next(sid: str) -> str:
 
 def restart_play(sid: str, bot: str | None = None) -> str:
     return _op(sid, lambda s: s.restart_play(bot_style=bot))
+
+
+def session_jump(sid: str, index: int) -> str:
+    return _op(sid, lambda s: s.jump_to(index))
