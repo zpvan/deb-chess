@@ -154,6 +154,18 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
     }
   }
 
+  const jumpTo = async (i: number) => {
+    if (!st || busy || i === st.step_index) return
+    setBusy(true)
+    try {
+      apply(await api.sessionJump(st.session_id, i))
+    } catch (e) {
+      if (!(await recover404(e))) setError(e instanceof Error ? e.message : t('common.error'))
+    } finally {
+      setBusy(false)
+    }
+  }
+
   // ---------------- 加载/错误 ----------------
   if (error) {
     return (
@@ -235,10 +247,19 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
             <div className="text-xs font-bold" style={{ color: accent }}>{st.chapter_badge} · {st.chapter_title}</div>
             <div className="font-display text-base leading-tight truncate">{st.level_title}</div>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-0.5">
             {Array.from({ length: st.step_count }).map((_, i) => (
-              <span key={i} className="w-2.5 h-2.5 rounded-full transition"
-                style={{ backgroundColor: i < st.step_index ? accent : i === st.step_index ? 'var(--star)' : 'var(--outline-variant)' }} />
+              <button key={i}
+                onClick={() => void jumpTo(i)}
+                disabled={busy || i === st.step_index}
+                aria-label={t('lesson.jumpTo', { n: i + 1 })}
+                className="p-1.5 rounded-full hover:bg-on-surface/10 transition disabled:opacity-60">
+                <span className="block w-2.5 h-2.5 rounded-full transition"
+                  style={{ backgroundColor:
+                    i === st.step_index ? 'var(--star)' :
+                    st.solved_steps.includes(i) ? accent :
+                    'var(--outline-variant)' }} />
+              </button>
             ))}
           </div>
           <LangToggle />

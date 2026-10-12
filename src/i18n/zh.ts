@@ -54,6 +54,7 @@ const zh: typeof en = {
   'lesson.wrong': '这一步不对,再想想,你可以的!',
   'lesson.thinking': '🤖 对方思考中……',
   'lesson.myMoves': '你已走 {n} 步',
+  'lesson.jumpTo': '跳到第 {n} 题',
   'lesson.finished.title': '闯关成功!',
   'lesson.finished.skill': '获得技能:',
   'lesson.finished.perfect': '完美通关,一次都没错!太厉害了!',

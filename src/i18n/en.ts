@@ -52,6 +52,7 @@ const en = {
   'lesson.wrong': 'Not that one — think again, you can do it!',
   'lesson.thinking': '🤖 Opponent is thinking…',
   'lesson.myMoves': 'You have played {n} moves',
+  'lesson.jumpTo': 'Go to step {n}',
   'lesson.finished.title': 'Level complete!',
   'lesson.finished.skill': 'Skill earned: ',
   'lesson.finished.perfect': 'Perfect clear — not a single mistake. Amazing!',
