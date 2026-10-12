@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { ChapterData, LevelData } from '@/lib/api'
 import { backend as api } from '@/lib/backend'
 import { useLang } from '@/i18n'
@@ -16,25 +16,31 @@ interface CurriculumCtx {
   totalPuzzles: number
   stockfishAvailable: boolean
   loading: boolean
+  /** 上次加载是否失败(网络/后端不可达) */
+  error: boolean
+  /** 失败后重试 */
+  retry: () => void
 }
 
 const Ctx = createContext<CurriculumCtx | null>(null)
 
-const EMPTY: CurriculumCtx = {
-  chapters: [],
-  flatLevels: [],
-  totalLevels: 0,
-  totalPuzzles: 0,
-  stockfishAvailable: false,
-  loading: true,
-}
-
 export function CurriculumProvider({ children }: { children: ReactNode }) {
   const { lang } = useLang()
-  const [data, setData] = useState<CurriculumCtx>(EMPTY)
+  const [data, setData] = useState<Omit<CurriculumCtx, 'retry'>>({
+    chapters: [],
+    flatLevels: [],
+    totalLevels: 0,
+    totalPuzzles: 0,
+    stockfishAvailable: false,
+    loading: true,
+    error: false,
+  })
+  // 自增 nonce 触发重新加载(retry 与语言切换共用同一条 effect)
+  const [nonce, setNonce] = useState(0)
+  const retry = useCallback(() => setNonce((n) => n + 1), [])
 
   useEffect(() => {
-    setData((d) => ({ ...d, loading: true }))
+    setData((d) => ({ ...d, loading: true, error: false }))
     api
       .getCurriculum(lang)
       .then((res) => {
@@ -49,12 +55,16 @@ export function CurriculumProvider({ children }: { children: ReactNode }) {
           totalPuzzles: res.total_puzzles,
           stockfishAvailable: res.stockfish_available,
           loading: false,
+          error: false,
         })
       })
-      .catch(() => setData({ ...EMPTY, loading: false }))
-  }, [lang])
+      .catch(() =>
+        setData((d) => ({ ...d, chapters: [], flatLevels: [], loading: false, error: true })),
+      )
+  }, [lang, nonce])
 
-  return <Ctx.Provider value={data}>{children}</Ctx.Provider>
+  const value = useMemo<CurriculumCtx>(() => ({ ...data, retry }), [data, retry])
+  return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }
 
 export function useCurriculum(): CurriculumCtx {

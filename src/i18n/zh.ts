@@ -4,6 +4,7 @@ const zh: typeof en = {
   'app.title': 'deb-chess 练级营',
   'app.loading': '加载中……',
   'common.retry': '重试',
+  'common.loadFailed': '课程加载失败,请检查连接后重试。',
   'common.error': '出错了',
   'common.continue': '继续',
   'common.next': '下一关',

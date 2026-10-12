@@ -13,7 +13,7 @@ interface Props {
 export default function MapPage({ onOpen, onHome }: Props) {
   const { t } = useLang()
   const { starsOf, totalStars, xp, rank } = useProgress()
-  const { chapters, flatLevels } = useCurriculum()
+  const { chapters, flatLevels, loading, error, retry } = useCurriculum()
 
   return (
     <div className="min-h-screen bg-surface text-on-surface pb-24">
@@ -36,6 +36,18 @@ export default function MapPage({ onOpen, onHome }: Props) {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 pt-8">
+        {error && (
+          <div className="bg-surface-container rounded-3xl elev-1 p-8 text-center">
+            <p className="font-bold text-[var(--board-check)] mb-4">{t('common.loadFailed')}</p>
+            <button onClick={retry}
+              className="state-layer px-6 py-3 rounded-full bg-primary text-on-primary font-bold transition">
+              {t('common.retry')}
+            </button>
+          </div>
+        )}
+        {!error && loading && (
+          <div className="text-center text-on-surface-variant py-10">{t('app.loading')}</div>
+        )}
         {chapters.map((ch) => (
           <section key={ch.id} className="mb-12">
             <div className="flex items-start gap-4 mb-5">

@@ -257,7 +257,7 @@ export default function Lesson({ levelId, onExit, onNext }: Props) {
                 <span className="block w-2.5 h-2.5 rounded-full transition"
                   style={{ backgroundColor:
                     i === st.step_index ? 'var(--star)' :
-                    st.solved_steps.includes(i) ? accent :
+                    st.solved_steps?.includes(i) ? accent :
                     'var(--outline-variant)' }} />
               </button>
             ))}

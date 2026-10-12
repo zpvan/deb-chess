@@ -2,6 +2,7 @@ const en = {
   'app.title': 'deb-chess Training Camp',
   'app.loading': 'Loading…',
   'common.retry': 'Retry',
+  'common.loadFailed': 'Could not load the course. Check your connection and try again.',
   'common.error': 'Something went wrong',
   'common.continue': 'Continue',
   'common.next': 'Next level',

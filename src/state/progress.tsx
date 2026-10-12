@@ -17,7 +17,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
   const [levels, setLevels] = useState<Record<string, number>>({})
   const [xp, setXp] = useState(0)
   const [totalStars, setTotalStars] = useState(0)
-  const [rank, setRank] = useState({ name: '小士兵', icon: '♟' })
+  const [rank, setRank] = useState({ name: lang === 'zh' ? '小士兵' : 'Pawn Rookie', icon: '♟' })
 
   const refresh = useCallback(async () => {
     const p = await api.getProgress(lang)
