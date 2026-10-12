@@ -66,6 +66,7 @@ export interface SessionState {
   chapter_soft: string
   step_index: number
   step_count: number
+  solved_steps: number[]
   step: PublicStep
   fen: string | null
   legal_moves: string[]
@@ -132,6 +133,8 @@ export const api = {
     req<SessionState>(`/sessions/${id}/choice`, { method: 'POST', body: JSON.stringify({ index }) }),
   sessionNext: (id: string) =>
     req<SessionState>(`/sessions/${id}/next`, { method: 'POST', body: '{}' }),
+  sessionJump: (id: string, index: number) =>
+    req<SessionState>(`/sessions/${id}/jump`, { method: 'POST', body: JSON.stringify({ step_index: index }) }),
   restartPlay: (id: string, bot?: string) =>
     req<SessionState>(`/sessions/${id}/restart-play`, {
       method: 'POST',

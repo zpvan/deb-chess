@@ -110,5 +110,6 @@ export const pyodideApi = {
   sessionMove: (id: string, move: string) => call<SessionState>('session_move', id, move),
   sessionChoice: (id: string, index: number) => call<SessionState>('session_choice', id, index),
   sessionNext: (id: string) => call<SessionState>('session_next', id),
+  sessionJump: (id: string, index: number) => call<SessionState>('session_jump', id, index),
   restartPlay: (id: string, bot?: string) => call<SessionState>('restart_play', id, bot ?? null),
 }
