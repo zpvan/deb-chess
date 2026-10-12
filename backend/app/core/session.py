@@ -22,6 +22,8 @@ ERRORS = {
     'unknown_bot': {'zh': '未知对手档位', 'en': 'Unknown bot level'},
     'finish_step': {'zh': '先完成这一步再走哦!', 'en': 'Finish this step first!'},
     'not_play': {'zh': '当前不是对弈步骤', 'en': 'This is not a play step'},
+    'jump_range': {'zh': '没有这一步哦', 'en': 'No such step'},
+    'already_finished': {'zh': '本关已通关,请重新开始', 'en': 'Level already finished — restart to play again'},
 }
 
 FAST_MATE_TEXT = {
@@ -79,6 +81,7 @@ class LessonSession:
         self.finished = False
         self.stars = 0
         self.progress_recorded = False
+        self.solved_steps: set[int] = set()
         self._reset_step_state()
 
     @property
@@ -105,6 +108,8 @@ class LessonSession:
 
     # ---------- 公开状态 ----------
     def state(self) -> dict:
+        if self.solved:
+            self.solved_steps.add(self.idx)
         step = self.step
         interactive = ((step.type in PUZZLE_TYPES and not self.solved)
                        or (step.type == 'play' and self.play_status == 'playing'))
@@ -126,6 +131,7 @@ class LessonSession:
             'chapter_soft': self.chapter.soft,
             'step_index': self.idx,
             'step_count': len(self.level.steps),
+            'solved_steps': sorted(self.solved_steps),
             'step': public_step(step, self.lang),
             # 有 reply 时展示用户走完的中间局面,前端延迟后再展示 reply.fen
             'fen': self._display_fen or (self.board.fen() if self.board else None),
@@ -149,6 +155,16 @@ class LessonSession:
         }
 
     # ---------- 推进 ----------
+    def jump_to(self, n: int) -> dict:
+        if self.finished:
+            raise IllegalMove('already_finished')
+        if n < 0 or n >= len(self.level.steps):
+            raise IllegalMove('jump_range')
+        if n != self.idx:
+            self.idx = n
+            self._reset_step_state()
+        return self.state()
+
     def advance(self) -> dict:
         if self.finished:
             return self.state()
